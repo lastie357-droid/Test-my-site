@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const toolsRoutes = require('./routes/tools');
 const previewRoutes = require('./routes/preview');
 const reportRoutes = require('./routes/reports');
+const proxyRoutes = require('./routes/proxy');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/preview', previewRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/proxy', proxyRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

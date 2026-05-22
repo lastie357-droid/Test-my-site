@@ -15,13 +15,23 @@ router.post('/test-login', async (req, res) => {
 
     const response = await axios.post(
       `${FAPI_BASE}/api_user/login?lang=en`,
-      { username: phone, password },
+      {
+        body: {
+          login_username: phone,
+          login_password: password,
+          device_type: 'desktop'
+        }
+      },
       {
         headers: {
           'Content-Type': 'application/json',
           'Origin': 'https://www.shabiki.com',
           'Referer': 'https://www.shabiki.com/login',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'sec-fetch-site': 'same-site',
+          'sec-fetch-mode': 'cors'
         },
         timeout: 15000
       }
@@ -45,12 +55,19 @@ router.post('/test-login', async (req, res) => {
       login_status: data.login_status,
       login_msg: data.login_msg,
       message: success ? 'Login successful' : (data.login_msg || 'Login failed'),
-      userData: success ? data.data : null
+      userData: success ? data.data : null,
+      raw: data
     });
 
   } catch (error) {
-    console.error('Login error:', error.message);
-    res.status(500).json({ error: 'Login request failed', details: error.message });
+    const status = error.response ? error.response.status : 500;
+    const msg = error.response ? JSON.stringify(error.response.data) : error.message;
+    console.error('Login error:', msg);
+    res.status(status >= 400 && status < 600 ? status : 500).json({
+      error: 'Login request failed',
+      details: msg,
+      status
+    });
   }
 });
 
