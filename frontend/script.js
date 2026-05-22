@@ -123,6 +123,7 @@ function showBrowserUI() {
     browserShot.classList.remove('hidden');
     pageInfoBar.classList.remove('hidden');
     saveSessionBtn.classList.remove('hidden');
+    document.getElementById('aviatorBtn')?.classList.remove('hidden');
   }
 }
 
@@ -570,6 +571,34 @@ async function apiPost(url, body) {
   });
   return res.json();
 }
+
+// ── AVIATOR QUICK LAUNCH ──────────────────────
+document.getElementById('aviatorBtn')?.addEventListener('click', async () => {
+  const btn = document.getElementById('aviatorBtn');
+  if (btn.classList.contains('loading')) return;
+  btn.classList.add('loading');
+  btn.textContent = '⏳ Loading…';
+  setStatus('busy', '🎮 Opening Aviator…');
+  setLoading(true, '🎮 Restoring session & opening Aviator…');
+  try {
+    const res  = await fetch(`${API}/browser/aviator`, { method: 'POST' });
+    const data = await res.json();
+    if (data.img) {
+      showShot(data.img);
+      if (data.url)   { addressBar.value = data.url; updateSecIcon(data.url); }
+      if (data.title) pageTitle.textContent = data.title;
+      setStatus('ready', '🎮 Aviator loaded');
+    } else {
+      setStatus('error', 'Aviator load failed');
+    }
+  } catch (e) {
+    setStatus('error', 'Error: ' + e.message);
+  } finally {
+    setLoading(false);
+    btn.classList.remove('loading');
+    btn.textContent = '🚀 Aviator';
+  }
+});
 
 // ── VIRTUAL KEYBOARD ──────────────────────────
 (function initVirtualKeyboard() {

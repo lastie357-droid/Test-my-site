@@ -132,6 +132,11 @@ body {
 .save-btn:hover { background: rgba(0,182,122,0.3); }
 .save-btn.hidden { display: none; }
 
+.aviator-btn { background: rgba(245,166,35,0.15); color: var(--gold); width: auto; padding: 0 12px; font-size: 12px; font-weight: 700; border: 1px solid rgba(245,166,35,0.3); }
+.aviator-btn:hover { background: rgba(245,166,35,0.3); color: white; }
+.aviator-btn.hidden { display: none; }
+.aviator-btn.loading { opacity: 0.6; cursor: not-allowed; }
+
 .address-wrap {
   flex: 1;
   display: flex;

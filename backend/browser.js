@@ -98,7 +98,7 @@ class BrowserManager {
     const executablePath = CHROME_PATHS.find(p => { try { return fs.existsSync(p); } catch { return false; } });
 
     this.browser = await puppeteerExtra.launch({
-      headless: true,
+      headless: 'new',
       executablePath,
       args: [
         '--no-sandbox',
@@ -108,11 +108,22 @@ class BrowserManager {
         '--no-zygote',
         '--window-size=1366,768',
         '--disable-features=IsolateOrigins,site-per-process',
-        // Realistic profile args
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
         '--disable-renderer-backgrounding',
         '--lang=en-KE',
+        // Anti-detection: remove automation flags
+        '--disable-blink-features=AutomationControlled',
+        '--disable-infobars',
+        // Enable features that real browsers have (needed for games)
+        '--enable-features=NetworkService,NetworkServiceInProcess',
+        '--allow-running-insecure-content',
+        '--disable-web-security',
+        // Better rendering for game iframes
+        '--enable-accelerated-2d-canvas',
+        '--enable-gpu-rasterization',
+        '--ignore-certificate-errors',
+        '--ignore-certificate-errors-spki-list',
       ],
       defaultViewport: { width: 1366, height: 768 },
       ignoreHTTPSErrors: true,
@@ -124,12 +135,31 @@ class BrowserManager {
   }
 
   async _stealthSetup(page) {
-    // stealth plugin already handles most fingerprint spoofing
-    // Extra: Kenya locale + geo
+    // Stealth plugin handles most fingerprint spoofing.
+    // Extra: hide all automation signals that game providers check.
     await page.evaluateOnNewDocument((ip) => {
+      // Remove webdriver flag
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+
+      // Realistic language/locale
       Object.defineProperty(navigator, 'languages', { get: () => ['en-KE', 'en', 'sw'] });
       Object.defineProperty(navigator, 'language',  { get: () => 'en-KE' });
-      // Emulate Kenya timezone
+
+      // Realistic hardware
+      Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 4 });
+      Object.defineProperty(navigator, 'deviceMemory',        { get: () => 8 });
+      Object.defineProperty(navigator, 'platform',            { get: () => 'Win32' });
+
+      // Realistic screen
+      Object.defineProperty(screen, 'width',       { get: () => 1366 });
+      Object.defineProperty(screen, 'height',      { get: () => 768 });
+      Object.defineProperty(screen, 'availWidth',  { get: () => 1366 });
+      Object.defineProperty(screen, 'availHeight', { get: () => 728 });
+      Object.defineProperty(screen, 'colorDepth',  { get: () => 24 });
+      Object.defineProperty(screen, 'pixelDepth',  { get: () => 24 });
+      Object.defineProperty(window, 'devicePixelRatio', { get: () => 1 });
+
+      // Kenya timezone
       const origDateTimeFormat = Intl.DateTimeFormat;
       Intl.DateTimeFormat = function(locale, opts) {
         opts = opts || {};
@@ -137,13 +167,40 @@ class BrowserManager {
         return new origDateTimeFormat(locale, opts);
       };
       Object.assign(Intl.DateTimeFormat, origDateTimeFormat);
+
+      // Permissions API (games check this)
+      if (navigator.permissions) {
+        const origQuery = navigator.permissions.query.bind(navigator.permissions);
+        navigator.permissions.query = (params) => {
+          if (params.name === 'notifications') return Promise.resolve({ state: 'denied' });
+          return origQuery(params);
+        };
+      }
+
+      // Plugin list (empty in headless — fill with realistic ones)
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => {
+          const arr = [
+            { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+            { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+            { name: 'Native Client',     filename: 'internal-nacl-plugin',  description: '' },
+          ];
+          arr.item = (i) => arr[i];
+          arr.namedItem = (n) => arr.find(p => p.name === n) || null;
+          return arr;
+        }
+      });
     }, KENYA_IP);
 
+    // Desktop UA that matches Chrome 120 (same as sec-ch-ua)
     await page.setUserAgent(
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     );
     await page.setExtraHTTPHeaders({
       'Accept-Language': 'en-KE,en;q=0.9,sw;q=0.8',
+      'sec-ch-ua': '"Chromium";v="120", "Google Chrome";v="120", "Not-A.Brand";v="99"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
     });
     try { await page.setGeolocation({ latitude: -1.2921, longitude: 36.8219 }); } catch {}
   }
@@ -425,7 +482,11 @@ class BrowserManager {
       keys.forEach(k => { try { const v = localStorage.getItem(k); if (v) { try { out[k] = JSON.parse(v); } catch { out[k] = v; } } } catch {} });
       return out;
     }).catch(() => ({}));
+    // Token may be nested inside lsData.user.api_token (Shabiki's structure)
+    const userObj = lsData.user || {};
+    const parsedUser = typeof userObj === 'string' ? (() => { try { return JSON.parse(userObj); } catch { return {}; } })() : userObj;
     const apiToken = lsData.api_token || lsData.token || lsData.auth_token
+      || parsedUser.api_token || parsedUser.public_api_access_token
       || cookies.find(c => c.name.toLowerCase().includes('token'))?.value || null;
     const session = {
       success: true,
@@ -460,23 +521,279 @@ class BrowserManager {
 
   // ── Restore ───────────────────────────────────────────────────────────────
   async restoreSessionToBrowser() {
-    if (!this.session?.cookies?.length) return false;
+    if (!this.session) return false;
     await this.launch();
     try {
-      await this.page.goto(SHABIKI, { waitUntil: 'domcontentloaded', timeout: 20000 });
-      const cookies = this.session.cookies.map(c => ({
+      const lsData = this.session.localStorage || {};
+
+      // Extract api_token from wherever it lives in the session
+      const userObj = lsData.user || {};
+      const apiToken = this.session.apiToken
+        || (typeof userObj === 'string' ? JSON.parse(userObj).api_token : userObj.api_token)
+        || null;
+
+      // ── KEY FIX: inject localStorage BEFORE the page scripts run ──
+      // evaluateOnNewDocument runs at the very start of each page load,
+      // before any SPA code executes, so the SPA reads the injected data.
+      // Also inject lang:en to prevent userLink?lang=null validation failure.
+      const enrichedLsData = { lang: 'en', language: 'en', ...lsData };
+      await this.page.evaluateOnNewDocument((lsData) => {
+        try {
+          Object.entries(lsData).forEach(([key, value]) => {
+            try {
+              const v = typeof value === 'string' ? value : JSON.stringify(value);
+              window.localStorage.setItem(key, v);
+            } catch {}
+          });
+        } catch {}
+      }, enrichedLsData);
+
+      // Set cookies BEFORE navigation so they're sent with the first request
+      const cookies = (this.session.cookies || []).map(c => ({
         name: c.name, value: c.value,
         domain: c.domain || '.shabiki.com', path: '/'
       }));
-      await this.page.setCookie(...cookies);
-      await this.page.reload({ waitUntil: 'domcontentloaded' });
-      await this._delay(2000);
+
+      // Intercept network requests to capture auth validation calls
+      const authCalls = [];
+      await this.page.setRequestInterception(true).catch(() => {});
+      const reqHandler = async (req) => {
+        let url = req.url();
+        const isFapi = url.includes('fapi.shabiki.com') || url.includes('shabiki.com/api');
+        if (isFapi) {
+          authCalls.push({ method: req.method(), url: url.substring(0, 120) });
+        }
+        // Fix lang=null → lang=en in userLink validation call
+        if (url.includes('/user/userLink') && url.includes('lang=null')) {
+          url = url.replace('lang=null', 'lang=en');
+          req.continue({ url }).catch(() => req.continue().catch(() => {}));
+          return;
+        }
+        req.continue().catch(() => {});
+      };
+      const respHandler = async (resp) => {
+        const url = resp.url();
+        const isFapi = url.includes('fapi.shabiki.com') || url.includes('shabiki.com/api');
+        if (isFapi && url.includes('userLink')) {
+          const body = await resp.text().catch(() => '');
+          console.log('[Restore] userLink response:', resp.status(), body.substring(0, 200));
+        }
+      };
+      this.page.on('request', reqHandler);
+      this.page.on('response', respHandler);
+
+      // Navigate to Shabiki (localStorage is pre-injected for this load)
+      await this.page.goto(SHABIKI, { waitUntil: 'domcontentloaded', timeout: 25000 });
+
+      // Set cookies now (they persist for future navigations)
+      if (cookies.length) {
+        await this.page.setCookie(...cookies).catch(() => {});
+      }
+
+      // Wait for SPA to initialise and make its auth API calls
+      await this._delay(4000);
+
+      // Stop interception
+      this.page.off('request', reqHandler);
+      this.page.off('response', respHandler);
+      await this.page.setRequestInterception(false).catch(() => {});
+      console.log('[Restore] Intercepted fapi calls:', authCalls.map(c=>c.url.replace('https://fapi.shabiki.com','')).join(', '));
+
+      // Verify localStorage actually has the user data
+      const lsCheck = await this.page.evaluate(() => {
+        try {
+          const raw = localStorage.getItem('user');
+          if (!raw) return null;
+          const u = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          return { id: u.id, hasToken: !!(u.api_token || u.public_api_access_token) };
+        } catch { return null; }
+      }).catch(() => null);
+
+      console.log('[Restore] localStorage check:', JSON.stringify(lsCheck));
+
+      // Check if the SPA thinks the user is logged in (look for login/logout UI)
+      const loggedIn = await this.page.evaluate(() => {
+        const body = document.body.innerHTML;
+        const hasLogin    = /login|create.account|sign.in/i.test(body);
+        const hasLogout   = /logout|my.account|balance|withdraw/i.test(body);
+        const hasAvatar   = !!document.querySelector('[class*="avatar"],[class*="user-menu"],[class*="account-menu"]');
+        return { hasLogin, hasLogout, hasAvatar };
+      }).catch(() => ({ hasLogin: true }));
+
+      console.log('[Restore] Page login state:', JSON.stringify(loggedIn));
+
       this.status = 'active';
-      this.step('✅ Session restored into browser');
-      return true;
+      this.step(lsCheck?.hasToken ? '✅ Session restored & logged in' : '⚠️ Session injected but SPA may need re-auth');
+      return !!(lsCheck?.hasToken);
     } catch (e) {
       this.step('⚠️ Restore failed: ' + e.message);
       return false;
+    }
+  }
+
+  // ── Navigate to Aviator ───────────────────────────────────────────────────
+  // PROVEN APPROACH:
+  //   1. Navigate to /casino (SPA listing page — single goto, no Cloudflare Error 1000)
+  //   2. Click #gtm-aviator (the Aviator nav-link) — this triggers the SPA's internal
+  //      game-launch flow which sets the gameapi.plqservice.com iframe src correctly.
+  //   Navigating directly to /casino/game/116234 does NOT trigger the game component.
+  async navigateToAviator() {
+    await this.launch();
+    this.status = 'navigating';
+    this.step('🎮 Opening Aviator…');
+
+    const CASINO_URL = 'https://www.shabiki.com/casino';
+
+    try {
+      const lsData = (this.session && this.session.localStorage) ? this.session.localStorage : {};
+
+      const enrichedLs = { lang: 'en', language: 'en', ...lsData };
+
+      // Pre-inject localStorage BEFORE SPA scripts run so the SPA reads auth data.
+      await this.page.evaluateOnNewDocument((ls) => {
+        try {
+          Object.entries(ls).forEach(([k, v]) => {
+            try { window.localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch {}
+          });
+        } catch {}
+      }, enrichedLs);
+
+      // Intercept: fix lang=null in userLink, log game requests
+      const gameRequests = [];
+      await this.page.setRequestInterception(true);
+
+      const reqH = req => {
+        let url = req.url();
+        if (url.includes('/user/userLink') && url.includes('lang=null')) {
+          url = url.replace('lang=null', 'lang=en');
+          req.continue({ url }).catch(() => req.continue().catch(() => {}));
+          return;
+        }
+        const isGame = url.includes('spribe') || url.includes('gameapi') || url.includes('plqservice');
+        if (isGame) {
+          gameRequests.push({ type: 'req', method: req.method(), url: url.substring(0, 200) });
+          console.log('[Aviator] → REQ', req.method(), url.substring(0, 150));
+        }
+        req.continue().catch(() => {});
+      };
+
+      const respH = async resp => {
+        const url = resp.url();
+        const isGame = url.includes('spribe') || url.includes('gameapi') || url.includes('plqservice');
+        if (isGame) {
+          let body = '';
+          try { body = (await resp.text()).substring(0, 300); } catch {}
+          gameRequests.push({ type: 'resp', status: resp.status(), url: url.substring(0, 200), body });
+          console.log('[Aviator] ← RESP', resp.status(), url.substring(0, 100));
+        }
+        if (url.includes('userLink')) {
+          let body = ''; try { body = (await resp.text()).substring(0, 200); } catch {}
+          console.log('[Aviator] userLink:', resp.status(), body);
+        }
+      };
+
+      this.page.on('request', reqH);
+      this.page.on('response', respH);
+
+      // ── Step 1: Navigate to casino listing (one goto) ─────────────────────
+      this.step('🎮 Loading casino page…');
+      await this.page.goto(CASINO_URL, { waitUntil: 'domcontentloaded', timeout: 30000 })
+        .catch(e => this.step('⚠️ goto warn: ' + e.message));
+
+      // Wait for SPA to fully boot and auth to validate
+      await this._delay(5000);
+
+      // Verify login state
+      const loggedIn = await this.page.evaluate(() => {
+        const body = document.body.innerHTML;
+        return {
+          hasLogout: /Logout|logout/.test(body),
+          lsUser:    !!localStorage.getItem('user'),
+          url:       window.location.href,
+        };
+      }).catch(() => ({ hasLogout: false }));
+      console.log('[Aviator] Casino page state:', JSON.stringify(loggedIn));
+      this.step(loggedIn.hasLogout ? '✅ Logged in — clicking Aviator…' : '⚠️ Session may need refresh');
+
+      // ── Step 2: Click #gtm-aviator to launch game via SPA ────────────────
+      // This is the ONLY reliable way to trigger Shabiki's SPA game launch.
+      // The SPA constructs the gameapi.plqservice.com iframe URL from localStorage.
+      const aviatorClicked = await this.page.evaluate(async () => {
+        const el = document.getElementById('gtm-aviator');
+        if (!el) return false;
+        el.click();
+        return true;
+      }).catch(() => false);
+
+      if (aviatorClicked) {
+        this.step('🎮 Aviator clicked — waiting for game iframe…');
+      } else {
+        // Fallback: navigate to game URL via JS (no new HTTP request to Cloudflare)
+        this.step('⚠️ #gtm-aviator not found — using JS router nav…');
+        await this.page.evaluate(() => {
+          window.history.pushState({}, '', '/casino/game/116234');
+          window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+        }).catch(() => {});
+      }
+
+      // ── Step 3: Wait for game iframe to appear ────────────────────────────
+      let iframeFound = false;
+      let iframeSrc   = '';
+      const isGameIframe = (src) =>
+        src && src !== 'about:blank' && !src.includes('WebPush')
+        && !src.includes('clarity') && !src.includes('hotjar')
+        && !src.includes('analytics') && !src.startsWith('javascript');
+
+      try {
+        await this.page.waitForFunction(() => {
+          const frames = Array.from(document.querySelectorAll('iframe'));
+          return frames.some(f => {
+            const s = f.src || '';
+            return s && s !== 'about:blank' && !s.includes('WebPush')
+              && !s.includes('clarity') && !s.includes('hotjar')
+              && !s.startsWith('javascript');
+          });
+        }, { timeout: 20000 });
+
+        iframeSrc = await this.page.evaluate(() => {
+          const frames = Array.from(document.querySelectorAll('iframe'));
+          const real = frames.find(f => {
+            const s = f.src || '';
+            return s && s !== 'about:blank' && !s.includes('WebPush') && !s.includes('clarity');
+          });
+          return real ? real.src : frames.map(f => f.src).join(' | ');
+        });
+        this.step('🎮 Game iframe: ' + iframeSrc.substring(0, 100));
+        iframeFound = true;
+        await this._delay(5000); // let the game render
+      } catch {
+        const allFrames = await this.page.evaluate(() =>
+          Array.from(document.querySelectorAll('iframe')).map(f => f.src)
+        ).catch(() => []);
+        this.step('⏰ Iframe wait timeout — frames: ' + JSON.stringify(allFrames).substring(0, 150));
+      }
+
+      // ── Final screenshot ──────────────────────────────────────────────────
+      this.page.off('request', reqH);
+      this.page.off('response', respH);
+      await this.page.setRequestInterception(false).catch(() => {});
+
+      const finalUrl   = this.page.url();
+      const finalTitle = await this.page.title().catch(() => '');
+      const img        = await this.screenshot();
+      this.status = 'active';
+      this.broadcast('screenshot', { img, url: finalUrl, title: finalTitle });
+      this.step(iframeFound ? '✅ Aviator game loaded!' : '⚠️ Game page ready (iframe not yet visible)');
+      console.log('[Aviator] gameRequests:', JSON.stringify(gameRequests.slice(-5), null, 2));
+      return { img, url: finalUrl, title: finalTitle, restored: loggedIn.lsUser, clicked: aviatorClicked, iframeFound, iframeSrc, gameRequests };
+
+    } catch (err) {
+      await this.page.setRequestInterception(false).catch(() => {});
+      this.step('⚠️ Aviator error: ' + err.message);
+      const img = await this.screenshot().catch(() => null);
+      if (img) this.broadcast('screenshot', { img });
+      this.status = 'active';
+      return { img, url: this.page?.url(), title: '', restored: false, error: err.message };
     }
   }
 

@@ -205,6 +205,174 @@ router.post('/reload', async (req, res) => {
 });
 
 /**
+ * POST /api/browser/eval
+ * Execute JavaScript in the browser page
+ */
+router.post('/eval', async (req, res) => {
+  if (!mgr.page) return res.status(404).json({ error: 'No browser running' });
+  const { script } = req.body;
+  if (!script) return res.status(400).json({ error: 'script required' });
+  try {
+    // Use page.evaluate with a properly scoped async function
+    const result = await mgr.page.evaluate(async (code) => {
+      try {
+        // eslint-disable-next-line no-eval
+        const fn = new Function('return (async function() { ' + code + ' })()');
+        const val = await fn();
+        return typeof val === 'string' ? val : JSON.stringify(val);
+      } catch (e) {
+        return 'EVAL_ERROR: ' + e.message;
+      }
+    }, script);
+    res.json({ ok: true, result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/browser/spribe-inspect
+ * Use CDP to capture ALL network requests from ALL frames (including game iframe).
+ * Clicks #gtm-aviator and records every request/response for 20 seconds.
+ */
+router.post('/spribe-inspect', async (req, res) => {
+  if (!mgr.page) return res.status(404).json({ error: 'No browser running' });
+  const events = [];
+  let cdpClient = null;
+  try {
+    // Create a CDP session on the main page
+    cdpClient = await mgr.page.target().createCDPSession();
+    await cdpClient.send('Network.enable');
+
+    // Capture request sent events (from ALL frames)
+    cdpClient.on('Network.requestWillBeSent', (params) => {
+      const url = params.request.url;
+      // Only log game-related or auth-related requests
+      if (url.includes('spribe') || url.includes('gameapi') || url.includes('plqservice')
+          || url.includes('fapi.shabiki') || url.includes('token')) {
+        events.push({
+          type: 'request',
+          requestId: params.requestId,
+          method: params.request.method,
+          url: url.substring(0, 250),
+          initiator: params.initiator?.type,
+          frameId: params.frameId,
+          ts: Date.now(),
+        });
+      }
+    });
+
+    // Capture response headers (status + Location for redirects)
+    cdpClient.on('Network.responseReceived', (params) => {
+      const url = params.response.url;
+      if (url.includes('spribe') || url.includes('gameapi') || url.includes('plqservice')
+          || url.includes('fapi.shabiki') || url.includes('token')) {
+        events.push({
+          type: 'response',
+          requestId: params.requestId,
+          status: params.response.status,
+          url: url.substring(0, 250),
+          location: params.response.headers?.location || params.response.headers?.Location || null,
+          mimeType: params.response.mimeType,
+          ts: Date.now(),
+        });
+      }
+    });
+
+    // Also capture load failures
+    cdpClient.on('Network.loadingFailed', (params) => {
+      events.push({ type: 'failed', requestId: params.requestId, error: params.errorText, ts: Date.now() });
+    });
+
+    // Click #gtm-aviator to launch game
+    const clicked = await mgr.page.evaluate(() => {
+      const el = document.getElementById('gtm-aviator');
+      if (el) { el.click(); return true; }
+      return false;
+    }).catch(() => false);
+
+    // Wait 20 seconds for all game network activity to complete
+    await new Promise(r => setTimeout(r, 20000));
+
+    // Detach CDP session
+    await cdpClient.detach().catch(() => {});
+
+    // Also get current iframe src for reference
+    const iframes = await mgr.page.evaluate(() =>
+      Array.from(document.querySelectorAll('iframe')).map(f => ({ src: f.src?.substring(0, 200), id: f.id }))
+    ).catch(() => []);
+
+    res.json({ clicked, events, iframes, eventCount: events.length });
+  } catch (err) {
+    if (cdpClient) await cdpClient.detach().catch(() => {});
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/browser/game-inspect
+ * Navigate to game page with full interception — returns all fapi calls made
+ */
+router.post('/game-inspect', async (req, res) => {
+  if (!mgr.page) return res.status(404).json({ error: 'No browser running' });
+  const url = req.body.url || `https://www.shabiki.com/casino/game/116234`;
+  const calls = [];
+  try {
+    await mgr.page.setRequestInterception(true).catch(() => {});
+    const rh = async req2 => {
+      const u = req2.url();
+      if (u.includes('fapi.shabiki') || u.includes('gameapi') || u.includes('plqservice') || u.includes('spribe')) {
+        calls.push({ method: req2.method(), url: u.substring(0, 200) });
+      }
+      if (u.includes('/user/userLink') && u.includes('lang=null')) {
+        req2.continue({ url: u.replace('lang=null', 'lang=en') }).catch(() => req2.continue().catch(() => {}));
+        return;
+      }
+      req2.continue().catch(() => {});
+    };
+    const rsp = async resp2 => {
+      const u = resp2.url();
+      if (u.includes('fapi.shabiki') || u.includes('gameapi') || u.includes('plqservice') || u.includes('spribe')) {
+        let body = ''; try { body = (await resp2.text()).substring(0, 500); } catch {}
+        const entry = calls.find(c => c.url === u.substring(0, 200));
+        if (entry) entry.response = { status: resp2.status(), body };
+        else calls.push({ url: u.substring(0, 200), response: { status: resp2.status(), body } });
+      }
+    };
+    mgr.page.on('request', rh);
+    mgr.page.on('response', rsp);
+    await mgr.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 }).catch(() => {});
+    await new Promise(r => setTimeout(r, 8000));
+    // Also get all current iframes
+    const iframes = await mgr.page.evaluate(() =>
+      Array.from(document.querySelectorAll('iframe')).map(f => f.src)
+    ).catch(() => []);
+    const pageText = await mgr.page.evaluate(() => document.body?.innerText?.substring(0, 300)).catch(() => '');
+    mgr.page.off('request', rh);
+    mgr.page.off('response', rsp);
+    await mgr.page.setRequestInterception(false).catch(() => {});
+    const img = await mgr.screenshot().catch(() => null);
+    res.json({ calls, iframes, pageText, img });
+  } catch (err) {
+    await mgr.page.setRequestInterception(false).catch(() => {});
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/browser/aviator
+ * Restore session and navigate directly to Aviator game
+ */
+router.post('/aviator', async (req, res) => {
+  try {
+    const result = await mgr.navigateToAviator();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * POST /api/browser/capture-session
  * Reads cookies + localStorage from the live page and saves as session
  */
@@ -213,6 +381,129 @@ router.post('/capture-session', async (req, res) => {
     const session = await mgr.captureSession();
     if (!session) return res.status(404).json({ error: 'No browser running' });
     res.json({ ok: true, session });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/browser/capture-casino-api
+ * Use CDP to capture all network requests for N seconds while triggering SPA navigation.
+ * body: { seconds?, triggerUrl? }
+ */
+router.post('/capture-casino-api', async (req, res) => {
+  if (!mgr.page) return res.status(404).json({ error: 'No browser running' });
+  const { seconds = 12, triggerUrl = '/casino/game/116234' } = req.body;
+  const events = [];
+  let cdpClient = null;
+  const responseBodyMap = {};
+  try {
+    cdpClient = await mgr.page.target().createCDPSession();
+    await cdpClient.send('Network.enable');
+
+    cdpClient.on('Network.requestWillBeSent', (p) => {
+      const url = p.request.url;
+      events.push({
+        type: 'req', requestId: p.requestId,
+        method: p.request.method, url: url.substring(0, 300),
+        headers: Object.keys(p.request.headers || {}).slice(0, 5),
+        ts: Date.now()
+      });
+    });
+
+    cdpClient.on('Network.responseReceived', async (p) => {
+      const url = p.response.url;
+      const entry = { type: 'res', requestId: p.requestId, status: p.response.status, url: url.substring(0, 300), mime: p.response.mimeType, ts: Date.now() };
+      events.push(entry);
+      // Try to get body for API responses
+      if (p.response.mimeType && (p.response.mimeType.includes('json') || p.response.mimeType.includes('text')) && (url.includes('fapi') || url.includes('backoffice') || url.includes('gameapi') || url.includes('casino') || url.includes('spribe') || url.includes('plq'))) {
+        try {
+          const body = await cdpClient.send('Network.getResponseBody', { requestId: p.requestId });
+          entry.body = body.body.substring(0, 500);
+        } catch {}
+      }
+    });
+
+    // Trigger SPA navigation via history.pushState
+    await mgr.page.evaluate((url) => {
+      window.history.pushState({}, '', url);
+      window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+    }, triggerUrl).catch(() => {});
+
+    await new Promise(r => setTimeout(r, seconds * 1000));
+    await cdpClient.detach().catch(() => {});
+
+    // Filter to only relevant API calls
+    const relevant = events.filter(e => {
+      const url = e.url || '';
+      return url.includes('fapi') || url.includes('backoffice') || url.includes('gameapi') || url.includes('plqservice') || url.includes('logiqgames') || url.includes('spribe') || (url.includes('casino') && !url.includes('cdn'));
+    });
+
+    res.json({ events: relevant, total: events.length });
+  } catch (err) {
+    if (cdpClient) await cdpClient.detach().catch(() => {});
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/browser/intercept-ajax
+ * Patch jQuery/fetch/XHR in the browser to capture ALL AJAX calls for N seconds.
+ * Also optionally triggers a SPA route change.
+ */
+router.post('/intercept-ajax', async (req, res) => {
+  if (!mgr.page) return res.status(404).json({ error: 'No browser running' });
+  const { seconds = 10, triggerUrl } = req.body;
+  try {
+    const calls = await mgr.page.evaluate(async ({ seconds, triggerUrl }) => {
+      const captured = [];
+      const isRelevant = (url) => url && (
+        url.includes('fapi.shabiki') || url.includes('backoffice-new') ||
+        url.includes('gameapi') || url.includes('plqservice') ||
+        url.includes('logiqgames') || url.includes('casino') || url.includes('spribe')
+      );
+
+      // Patch jQuery AJAX if available
+      if (window.$ && window.$.ajax) {
+        const origAjax = window.$.ajax.bind(window.$);
+        window.$.ajax = function(...args) {
+          const opts = args[0] || {};
+          const url = typeof opts === 'string' ? opts : (opts.url || '');
+          if (isRelevant(url)) {
+            const origSuccess = opts.success;
+            opts.success = function(data, ...rest) {
+              captured.push({ type: 'jquery', url: url.substring(0, 200), data: JSON.stringify(data).substring(0, 400) });
+              if (origSuccess) origSuccess.apply(this, [data, ...rest]);
+            };
+          }
+          return origAjax(...args);
+        };
+      }
+
+      // Patch fetch
+      const origFetch = window.fetch.bind(window);
+      window.fetch = async (...args) => {
+        const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+        const resp = await origFetch(...args);
+        if (isRelevant(url)) {
+          const clone = resp.clone();
+          clone.text().then(body => captured.push({ type: 'fetch', url: url.substring(0, 200), status: resp.status, body: body.substring(0, 400) })).catch(() => {});
+        }
+        return resp;
+      };
+
+      // Trigger SPA navigation
+      if (triggerUrl) {
+        window.history.pushState({}, '', triggerUrl);
+        window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+      }
+
+      await new Promise(r => setTimeout(r, seconds * 1000));
+      window.fetch = origFetch;
+      return captured;
+    }, { seconds, triggerUrl });
+
+    res.json({ calls, count: calls.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

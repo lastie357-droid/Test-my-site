@@ -1,73 +1,73 @@
 {
   "success": true,
   "phone": null,
-  "url": "https://shabiki.com/prematch",
+  "url": "https://shabiki.com/casino/game/116234",
   "title": "Shabiki – Kenya’s Leading Online Sports Betting & Jackpot Platform",
-  "apiToken": null,
+  "apiToken": "18d01bdbeccc6d292a4a3ee77231a45488db6f1bc6a66d9486bc7ac941fdcbb9",
   "cookies": [
     {
-      "name": "_clsk",
-      "value": "1qll9fe%5E1779467672667%5E9%5E1%5Ee.clarity.ms%2Fcollect",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_ga",
-      "value": "GA1.1.1763573207.1779465252",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_hjSession_3680061",
-      "value": "eyJpZCI6ImQ5NmRmYTFkLWRhYmEtNDIzOC1iZGRlLTNkN2EyOTY4MTIwZCIsImMiOjE3Nzk0NjUyNTMwMTAsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjoxLCJzcCI6MH0=",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_hjSessionUser_3680061",
-      "value": "eyJpZCI6IjE5N2JkZTUyLWFhNjYtNTY1Mi04ZDcwLWY5NDU5MDk4N2Q3YiIsImNyZWF0ZWQiOjE3Nzk0NjUyNTMwMDgsImV4aXN0aW5nIjp0cnVlfQ==",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_fbp",
-      "value": "fb.1.1779465253208.939457169425259161",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_clck",
-      "value": "8w0vht%5E2%5Eg69%5E0%5E2333",
-      "domain": ".shabiki.com"
-    },
-    {
       "name": "_twpid",
-      "value": "tw.1779465252709.679293230777118496",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_gcl_au",
-      "value": "1.1.1062750731.1779465252",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_ga_91SE2YRRFD",
-      "value": "GS2.1.s1779465251$o1$g1$t1779467671$j16$l0$h0",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "po_visitor",
-      "value": "Rz-BEeHxz4Bb",
-      "domain": "shabiki.com"
-    },
-    {
-      "name": "_ga_V5J1H8HF7E",
-      "value": "GS2.1.s1779465252$o1$g1$t1779467672$j14$l0$h0",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "__zlcmid",
-      "value": "1XfoWqb7uog4uD8",
+      "value": "tw.1779470762533.59861710989388897",
       "domain": ".shabiki.com"
     },
     {
       "name": "sib_cuid",
-      "value": "279b631a-8320-4d71-a530-9c2ccc20878e",
+      "value": "35213d3a-0cb1-4327-a28e-c2c38a871944",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "po_visitor",
+      "value": "W7c27_kxiiFu",
+      "domain": "shabiki.com"
+    },
+    {
+      "name": "_hjSessionUser_3680061",
+      "value": "eyJpZCI6IjRkNDg3M2E5LWY1ZDEtNWM3MS1hN2RjLWJiMzcwMTM0ZjYwYSIsImNyZWF0ZWQiOjE3Nzk0NzA3NjI5OTgsImV4aXN0aW5nIjpmYWxzZX0=",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_hjSession_3680061",
+      "value": "eyJpZCI6IjMwMmFjYWEzLWE0OWMtNGM1OC1iMDNmLTRkYmNjMmE5ODQwNiIsImMiOjE3Nzk0NzA3NjI5OTksInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjoxLCJzcCI6MH0=",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_gcl_au",
+      "value": "1.1.356642626.1779470762",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_fbp",
+      "value": "fb.1.1779470762863.377020506672846406",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "__zlcmid",
+      "value": "1XfoWrCPsT9vuQM",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_ga_V5J1H8HF7E",
+      "value": "GS2.1.s1779470762$o1$g0$t1779470762$j60$l0$h0",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_ga_91SE2YRRFD",
+      "value": "GS2.1.s1779470761$o1$g0$t1779470761$j60$l0$h0",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_clsk",
+      "value": "rf5335%5E1779470763464%5E1%5E1%5Ep.clarity.ms%2Fcollect",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_clck",
+      "value": "14bifc6%5E2%5Eg69%5E0%5E2333",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.330907041.1779470762",
       "domain": ".shabiki.com"
     }
   ],
@@ -95,11 +95,11 @@
       },
       "users": false,
       "payments-token": false,
-      "api_token": "2004cdf3e9c1ee9cfc62f2e54f7c9992638ed9cfb6a0056f8d99d7d6fb50491a",
-      "public_api_access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5ZDQwMWI4MS1jMTFkLTRmOTQtODdmZS03ZmQ2YzMxYzgyYTMiLCJqdGkiOiJmYjNmZjhmNmQ2MjUxZTc3NTk2ZmQzNTk3ZWQ4YjliYzVlNjZjOTc3M2MxMmRkOWI4OWE5ZjJmZWJmY2UyYzA3ODBkODZhMDE2NzIzYmVhMSIsImlhdCI6MTc3OTQ2NzM5NS45Mjk4MzcsIm5iZiI6MTc3OTQ2NzM5NS45Mjk4NDEsImV4cCI6MTc4MjA1OTM5NS45MjAzNzQsInN1YiI6Ijc0ODQ4MzQiLCJzY29wZXMiOlsiZnJvbnRlbmQ6KiJdfQ.hUTaitYwxSkXq6hig9r6F3AP23loOsa6nUehhydyDZZKIupfarcyy6Xv0t6uFs-ZMS73dJ6Qg9rxgnNwrskNh91B86m37rEwU8NLrJCjrwsGUhYYVGpaE36Jj1WfLAiH4WIi4NXEHD3mproCvYSKE4Xmiy3HYr9kGhVIKu4yQawnZ9ujjAPHFl4MABSpao0CZbME9KTYOu7-zCF19N4tgmP_f8li7KR6wiA_LPPKtBBBmBFCzED4i5siAHTMaOEsVftoX7s0aGMez2okegVnsha2YJByu96TBd2-4dyjiOfHhT7sBH6AWTX1m-NIGnGY7Ag7OO-OxYqgOEBq348HJXPmA4Jzmf6Im2JL-ojjVQ8bvkV2AYt63QR9XWPSC0fMMjkeUuykAu1BGHc1DFwwZAs103h3dqjIiNm2Ds-vvr6cOXvxdJ5nGXeid-MMAu0CIa0bqKpgCfOx5lpG_qQQFZQ57IgS0q-deBnbc-r0sVmv_mfmmqDaVQjcMPIbhu8nqfqLz0tb_gKD6x3mFOaJzg4SdbzVSaZIVR8IOiaaarKqGthAmY_HTs4VRv7AnHUFcSfPyiEHUs0iGpKXMr5JafsyCdm1Jf4P6Bhrl-MPRKUwc8iPWP48MUJBIje3u5nkqzuYiRjnicY1OkFaeADwPCfYANDu9SWrCnVBKHh1biw",
-      "refresh_token": "def502009a8c1e1a8786f0fdbfdce1cfbc0921c74f49819d4099869514d669891bf0cde6912d4f831c0defb16775b5f5a0d38dd4baf0d0c4a2152ba053867ec8484dde11a31ec4ff671579d898254f50ee902de19f15828cb6b6c4b56546744a4c492c7845ed16f019854498f88a965491af7666a092b829700e7cdbf19b8bcd1e1f479c91b82d58c8a8a098b3f5ddf678e1b8a636d2d4ca79c377730c57b4d8cb4ef17bd2cb030974370a44bcfb5539abb3f9fe3b847ba3fa02b0d6b9cbe0abce66970067e9e8d981a836b54f86aec91aa65821146602b8d5a81b8f0fac6bc0c943d48f5158d707ac149c0d2b2d03d27542c40ec6e285f9c4240019bb5d32239ec2b76a359ed7f4cedb1aab0a321c1cd7f0b8cd61b112fc421ce5e3a80881a8a809873b0be1dc4a7948e8effef94f5814f3dcd14e039008abe3dc3120062847aabc48b62ab3b79d42bd1ae865eeec5f8988278e4a0ffd0631522f524781443e3386b1a6a2d7e3674a06eb0b4c2b29530af43e760b8353f43fe0f30ce1d4c0ea3624cded18e526854b9ccf04f974ddd9c7b626a4d5d9",
+      "api_token": "18d01bdbeccc6d292a4a3ee77231a45488db6f1bc6a66d9486bc7ac941fdcbb9",
+      "public_api_access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5ZDQwMWI4MS1jMTFkLTRmOTQtODdmZS03ZmQ2YzMxYzgyYTMiLCJqdGkiOiI0ZWRiNGQzNTFmNzBjYjZjYzhmMGNiYmI5YzNmZjI4Y2Q2OTcwOTUwZTgyNzcwMjA3NzkzMGFkMTRjYjIxMGFlMWU3YjhjNWU2OTVmMGQ1ZiIsImlhdCI6MTc3OTQ2ODE3OS40MjU3MDIsIm5iZiI6MTc3OTQ2ODE3OS40MjU3MDQsImV4cCI6MTc4MjA2MDE3OS40MTYxOTUsInN1YiI6Ijc0ODQ4MzQiLCJzY29wZXMiOlsiZnJvbnRlbmQ6KiJdfQ.DOntbSM9goKQdbUlojfAC1DFHKtQ1JOE39rz9wey0Lx0l32z_xJcfc_IA0fsnPbW9RkNI0a8FcgpGm2BAVA6J5l6W4FiQ5f9q67yy79B9G1o3xdSU9zd-TsOd6TfPDjidzveQUAzIk33ZqQa9jqhzMfEhGd-lU1d0lyxN18kXcz6JiaX07-CRXlDq6_GIOhTp9DcV_-06i_edIdaWIT3kiKx_vkAQBTx8z2wj539zb9_n0IZCPbrNcjKdrG3UYrb0CKRJHnlg-KdF20-SoR5_j6C-QBjz-ZEt9q4c_9_-KZko41elG4A-pwGIeqDV_Pb_ZBbS4tr7ZB6Ukqdnq9w1R2m7Od9ic0nylgqCuLONRzpnccIEyJfHG_DNKDRo_-IQaIonTkw-5Mq3Ycc7W9bql5XdK7BBsM1uvxMM4CX9cJNpejaiTWsshwDBykEE7Lv8lYmirnDtI23n4UNbgk-_uwcvAMBaLHQJhS3-d41S9Og-NKtmII-VIFsOo7SGG9F0N6ZU3YP0EDDkNg4Fhq-oYHbahL9AQ9Jh4638WmNPrWUkGpi5Pnj4kO6WzsrRl2HeQIqQ27VN8lCefdMnNPOmKIBDylJJEz15p_1LD-A0xw62LK9kjTpEUjtuXGvb-uXtxIYaGl4y1ZcmAzlC-hQ8u8FhSc925QOisjkm4Qgkig",
+      "refresh_token": "def502007b5ccd087049df0af93dde447eca85b1461cb0a9bb90b8bf864b92dddf5cd41e76711f80f68058f697e78c73f31ffaf1567d4d78223f6810a62ed9744e2250834d7123b4419fb5f6879c3980725abc52c1a09173eaf7cb61e2ea26f4359249d967d9065c9b09235c42b3c2b6f0b1488092148c0c7cd99dd48e3d9a5c9bacb53bfe84dea3caca4d04454d5047fe6bcf8074c477d29beed594f3a478f743c45665d64cdd0549d1d4363cb5e8541ecfca7c79ee88813dfeb29916a0dd1a842897075b4f1b7eed026449c80117981db22fd331a0127514da56461ffa769dcf7d6099198a01aa104b7454fe5ec69b20cc7bf34cf277593d81b8598cb0fadaa24f340e9331eeb699796343036ce5185db313d77924334e46bba23f19a988eda990450a932dcd8b1d4f7b64d5a6b85f155615dbd565ee17ba623b764d19bfc76bd5f4544e12208efc0762c1b9ba0108fa4c0288e4cc1b093d3d1ba5747341d99a22d1fe396e32f3453852a9b6e49150d8f42dc07d9a7498f9a1e6a981c45f9de037845f74dc94c62d594e61acca10890705280ea641",
       "kyc_status": "not_init"
     }
   },
-  "savedAt": "2026-05-22T16:34:36.651Z"
+  "savedAt": "2026-05-22T17:27:40.701Z"
 }
