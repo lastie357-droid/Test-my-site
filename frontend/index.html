@@ -3,198 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shabiki Testing Dashboard</title>
+  <title>Shabiki Dashboard</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <nav class="navbar">
-      <div class="nav-brand">
-        <h1>⚡ <span>SHABIKI</span> DASHBOARD</h1>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <div class="nav-brand">⚡ <span>SHABIKI</span></div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="browser">🌐 Browser</button>
+    <button class="nav-tab" data-tab="tools">🛠 Tools</button>
+    <button class="nav-tab" data-tab="reports">📋 Reports</button>
+  </div>
+
+  <div class="nav-right">
+    <div id="sessionBadge" class="session-badge hidden">
+      <span class="badge-dot"></span>
+      <span id="sessionPhone">+254…</span>
+      <button id="navClearBtn" class="badge-clear" title="Clear session">✕</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════ BROWSER TAB ═══════════════ -->
+<div id="tab-browser" class="tab-content active">
+
+  <!-- Address Bar -->
+  <div class="browser-bar">
+    <button class="bar-btn" id="backBtn"   title="Back">←</button>
+    <button class="bar-btn" id="fwdBtn"    title="Forward">→</button>
+    <button class="bar-btn" id="reloadBtn" title="Reload">↺</button>
+
+    <div class="bar-sep"></div>
+
+    <div class="address-wrap">
+      <span class="sec-icon" id="secIcon">🔒</span>
+      <input id="addressBar" class="address-bar" type="text"
+             value="https://www.shabiki.com"
+             placeholder="Enter URL and press Enter…"
+             spellcheck="false" autocomplete="off">
+    </div>
+
+    <button class="bar-btn go-btn" id="goBtn" title="Go">▶</button>
+
+    <div class="bar-sep"></div>
+
+    <button class="bar-btn save-btn hidden" id="saveSessionBtn" title="Save session">💾 Save</button>
+
+    <div id="barStatus" class="bar-status idle">
+      <span class="bar-status-dot"></span>
+      <span id="barStatusText">Idle</span>
+    </div>
+
+    <button class="bar-launch-btn" id="launchBtn">🚀 Launch</button>
+  </div>
+
+  <!-- Viewport -->
+  <div class="viewport-wrap" id="viewportWrap">
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
+      <div class="spinner"></div>
+      <div id="loadingLabel">Loading…</div>
+    </div>
+
+    <!-- Screenshot (shown when browser is running) -->
+    <div class="screenshot-container" id="screenshotContainer">
+      <img id="browserShot" class="browser-screenshot hidden"
+           draggable="false" alt="Browser view"
+           tabindex="0">
+    </div>
+
+    <!-- Splash (shown before browser launches) -->
+    <div class="splash" id="splash">
+      <div class="splash-logo">🌐</div>
+      <h2>Shabiki Browser</h2>
+      <p>A full Chromium session running on this server.<br>
+         Browse, log in, and your session is automatically saved.</p>
+
+      <!-- Saved session card -->
+      <div class="splash-session hidden" id="splashSession">
+        <div class="splash-session-info">
+          <span class="ss-dot"></span>
+          <span id="splashSessionText">Session saved</span>
+        </div>
+        <button class="btn-splash-secondary" id="resumeBtn">▶ Resume Saved Session</button>
       </div>
-      <div class="nav-right">
-        <div id="sessionBadge" class="session-badge hidden">
-          <span class="badge-dot"></span>
-          <span id="sessionPhone"></span>
-          <button id="navClearBtn" class="badge-clear">✕</button>
+
+      <button class="btn-splash" id="splashLaunchBtn">🚀 Launch Browser</button>
+
+      <!-- Manual import toggle -->
+      <div class="splash-manual">
+        <button class="btn-splash-link" id="showManualBtn">
+          Already logged in? Paste your token →
+        </button>
+        <div class="manual-import-box hidden" id="manualImportBox">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:4px">
+            Log into <a href="https://www.shabiki.com/login" target="_blank" style="color:var(--accent)">Shabiki in your browser</a>,
+            open DevTools → Application → LocalStorage → copy <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;font-size:11px">api_token</code>
+          </p>
+          <input class="manual-token-input" id="manualToken"
+                 placeholder="Paste API token here…">
+          <input class="manual-token-input" id="manualPhone"
+                 placeholder="Phone +254…" value="+254794897825"
+                 style="margin-top:4px">
+          <button class="btn-splash-secondary" id="importTokenBtn">✅ Import Session</button>
+          <div class="manual-import-status" id="importStatus"></div>
         </div>
-        <ul class="nav-menu">
-          <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
-          <li><a href="#live" class="nav-link">Live Site</a></li>
-          <li><a href="#tools" class="nav-link">Tools</a></li>
-          <li><a href="#reports" class="nav-link">Reports</a></li>
-        </ul>
       </div>
-    </nav>
+    </div>
 
-    <div class="main-content">
+  </div>
 
-      <!-- ══════════ DASHBOARD ══════════ -->
-      <section id="dashboard" class="section active">
-        <h2 class="section-title">🎯 Dashboard</h2>
-
-        <div class="dashboard-grid">
-
-          <!-- Left: Login -->
-          <div class="panel login-panel">
-            <h3>🔐 Shabiki Login Test</h3>
-            <p class="panel-note">Direct API via <code>fapi.shabiki.com</code> — no browser needed.</p>
-            <form id="loginForm">
-              <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" placeholder="+254794897825" required>
-              </div>
-              <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="panel123" required>
-              </div>
-              <button type="submit" class="btn btn-primary" id="loginBtn">🚀 Test Login</button>
-              <div id="loginStatus" class="status-message"></div>
-            </form>
-            <div id="userDataCard" class="user-data-card" style="display:none;"></div>
-          </div>
-
-          <!-- Right: API Response -->
-          <div class="panel response-panel">
-            <h3>📡 API Response</h3>
-            <div id="apiResponse" class="json-box empty-box">
-              <span class="empty-hint">Submit the login form to see the live response from fapi.shabiki.com</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Full-width live Shabiki preview underneath -->
-        <div class="panel live-preview-panel">
-          <div class="live-preview-header">
-            <h3>🌐 Live Shabiki Site</h3>
-            <div class="live-controls">
-              <input id="liveUrl" type="text" value="https://www.shabiki.com" class="url-input">
-              <button id="reloadSiteBtn" class="btn btn-secondary btn-sm">🔄 Reload</button>
-              <button id="openTabBtn" class="btn btn-secondary btn-sm">↗ Open Tab</button>
-              <span id="liveStatus" class="live-status-text"></span>
-            </div>
-          </div>
-          <div class="iframe-shell">
-            <div class="iframe-toolbar">
-              <span class="toolbar-dot red"></span>
-              <span class="toolbar-dot yellow"></span>
-              <span class="toolbar-dot green"></span>
-              <span class="toolbar-url" id="iframeUrlDisplay">https://www.shabiki.com</span>
-            </div>
-            <iframe id="shabikiFrame" src="/api/proxy/site?url=https://www.shabiki.com" 
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              loading="lazy"></iframe>
-          </div>
-        </div>
-
-        <!-- Security Analysis Results -->
-        <div class="panel" id="analysisPanel" style="display:none;">
-          <h3>🛡️ Security Analysis</h3>
-          <div id="analysisResults" class="analysis-results"></div>
-        </div>
-      </section>
-
-      <!-- ══════════ LIVE SITE (Full) ══════════ -->
-      <section id="live" class="section">
-        <h2 class="section-title">🌐 Live Shabiki Website</h2>
-        <div class="panel" style="padding:0;overflow:hidden;">
-          <div class="iframe-shell fullpage-iframe">
-            <div class="iframe-toolbar">
-              <span class="toolbar-dot red"></span>
-              <span class="toolbar-dot yellow"></span>
-              <span class="toolbar-dot green"></span>
-              <input id="fullpageUrl" class="toolbar-url-input" value="https://www.shabiki.com">
-              <button id="fullpageGoBtn" class="btn btn-secondary btn-sm" style="margin-left:8px;">Go</button>
-              <button id="fullpageReloadBtn" class="btn btn-secondary btn-sm" style="margin-left:4px;">🔄</button>
-            </div>
-            <iframe id="shabikiFrameFull"
-              src="/api/proxy/site?url=https://www.shabiki.com"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              loading="lazy"></iframe>
-          </div>
-        </div>
-      </section>
-
-      <!-- ══════════ TOOLS ══════════ -->
-      <section id="tools" class="section">
-        <h2 class="section-title">🛠️ Security Testing Tools</h2>
-        <div class="tools-grid" id="toolsGrid">
-          <div class="loading">Loading tools...</div>
-        </div>
-        <div class="panel">
-          <h3>⚙️ Execute Tool</h3>
-          <form id="toolForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="toolSelect">Select Tool</label>
-                <select id="toolSelect" required>
-                  <option value="">-- Select a tool --</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="toolTarget">Target (Domain/IP)</label>
-                <input type="text" id="toolTarget" placeholder="shabiki.com or 192.168.1.1" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="toolOptions">Additional Options (Optional)</label>
-              <textarea id="toolOptions" placeholder="-p 80,443 -sV" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">▶ Execute Tool</button>
-            <div id="toolStatus" class="status-message"></div>
-          </form>
-        </div>
-        <div class="panel" id="toolOutputPanel" style="display:none;">
-          <h3>💻 Tool Output</h3>
-          <pre id="toolOutput" class="output-box"></pre>
-        </div>
-      </section>
-
-      <!-- ══════════ REPORTS ══════════ -->
-      <section id="reports" class="section">
-        <h2 class="section-title">📋 Test Reports</h2>
-        <div class="panel">
-          <h3>✏️ Create Report</h3>
-          <form id="reportForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="reportName">Test Name</label>
-                <input type="text" id="reportName" placeholder="Shabiki Login Audit — May 2026" required>
-              </div>
-              <div class="form-group">
-                <label for="reportDomain">Target Domain</label>
-                <input type="text" id="reportDomain" placeholder="shabiki.com" value="shabiki.com" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="reportFindings">Key Findings (one per line)</label>
-              <textarea id="reportFindings" placeholder="Enter findings, one per line" rows="4"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">📄 Create Report</button>
-            <div id="reportStatus" class="status-message"></div>
-          </form>
-        </div>
-        <div class="panel">
-          <h3>📁 Reports History</h3>
-          <div id="reportsList" class="reports-list">
-            <p style="color:var(--text-muted);">No reports yet.</p>
-          </div>
-        </div>
-      </section>
-
+  <!-- Page info bar -->
+  <div class="page-info-bar hidden" id="pageInfoBar">
+    <span class="page-title-text" id="pageTitle">—</span>
+    <div class="page-info-right">
+      <span class="dim-label" id="pageDims">1366 × 768</span>
+      <span class="session-status-dot no-session" id="sessionStatusDot">⬤ No session</span>
     </div>
   </div>
 
-  <!-- HTML Modal -->
-  <div id="htmlModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>HTML Content</h2>
-      <div class="modal-body"><pre id="htmlContent"></pre></div>
+</div>
+
+<!-- ═══════════════ TOOLS TAB ═══════════════ -->
+<div id="tab-tools" class="tab-content">
+  <div class="inner-content">
+    <h2 class="section-title">🛠️ Security Tools</h2>
+    <div class="tools-grid" id="toolsGrid"><div class="loading">Loading…</div></div>
+    <div class="panel">
+      <h3>⚙️ Execute Tool</h3>
+      <form id="toolForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tool</label>
+            <select id="toolSelect" required>
+              <option value="">-- Select --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Target</label>
+            <input type="text" id="toolTarget" placeholder="shabiki.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Options</label>
+          <textarea id="toolOptions" rows="3" placeholder="-p 80,443"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">▶ Run</button>
+        <div id="toolStatus" class="status-message"></div>
+      </form>
+    </div>
+    <div class="panel" id="toolOutputPanel" style="display:none">
+      <h3>Output</h3>
+      <pre id="toolOutput" class="output-box"></pre>
     </div>
   </div>
+</div>
 
-  <script src="script.js"></script>
+<!-- ═══════════════ REPORTS TAB ═══════════════ -->
+<div id="tab-reports" class="tab-content">
+  <div class="inner-content">
+    <h2 class="section-title">📋 Reports</h2>
+    <div class="panel">
+      <h3>✏️ New Report</h3>
+      <form id="reportForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Test Name</label>
+            <input type="text" id="reportName" placeholder="Shabiki Login Audit" required>
+          </div>
+          <div class="form-group">
+            <label>Domain</label>
+            <input type="text" id="reportDomain" value="shabiki.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Findings (one per line)</label>
+          <textarea id="reportFindings" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">📄 Save Report</button>
+        <div id="reportStatus" class="status-message"></div>
+      </form>
+    </div>
+    <div class="panel">
+      <h3>📁 History</h3>
+      <div id="reportsList" class="reports-list">
+        <p style="color:var(--muted)">No reports yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>

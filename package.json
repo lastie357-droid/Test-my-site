@@ -17,6 +17,8 @@
     "dotenv": "^16.6.1",
     "express": "^4.22.2",
     "puppeteer": "^19.11.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "ws": "^8.20.1"
   },
   "devDependencies": {

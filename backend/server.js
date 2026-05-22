@@ -1,95 +1,73 @@
-const express = require('express');
-const cors = require('cors');
+const express    = require('express');
+const cors       = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');
-const http = require('http');
-const WebSocket = require('ws');
+const path       = require('path');
+const http       = require('http');
+const WebSocket  = require('ws');
 
-// Import route handlers
-const authRoutes = require('./routes/auth');
-const toolsRoutes = require('./routes/tools');
+const authRoutes    = require('./routes/auth');
+const toolsRoutes   = require('./routes/tools');
 const previewRoutes = require('./routes/preview');
-const reportRoutes = require('./routes/reports');
-const proxyRoutes = require('./routes/proxy');
+const reportRoutes  = require('./routes/reports');
+const proxyRoutes   = require('./routes/proxy');
+const browserRoutes = require('./routes/browser');
+const browserMgr    = require('./browser');
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Serve static files from frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/tools', toolsRoutes);
+app.use('/api/auth',    authRoutes);
+app.use('/api/tools',   toolsRoutes);
 app.use('/api/preview', previewRoutes);
 app.use('/api/reports', reportRoutes);
-app.use('/api/proxy', proxyRoutes);
+app.use('/api/proxy',   proxyRoutes);
+app.use('/api/browser', browserRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'Server is running', timestamp: new Date() });
-});
-
-// Serve main dashboard
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
-});
-
-// Error handling middleware
+app.get('/api/health', (req, res) =>
+  res.json({ status: 'running', ts: new Date() })
+);
+app.get('/', (req, res) =>
+  res.sendFile(path.join(__dirname, '../frontend/index.html'))
+);
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: err.message
-  });
+  console.error('Error:', err.message);
+  res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-// Create HTTP server
 const server = http.createServer(app);
-
-// WebSocket setup for real-time updates
-const wss = new WebSocket.Server({ server });
+const wss    = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
-  console.log('WebSocket client connected');
-  
-  ws.on('message', (message) => {
-    console.log('Received:', message);
-    // Broadcast to all clients
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
-  });
+  // Register with browser manager for real-time push
+  browserMgr.wsClients.add(ws);
 
-  ws.on('close', () => {
-    console.log('WebSocket client disconnected');
-  });
+  // Send current status immediately on connect
+  ws.send(JSON.stringify({
+    event:   'connected',
+    status:  browserMgr.status,
+    session: browserMgr.getSession() ? {
+      phone:    browserMgr.session.phone,
+      savedAt:  browserMgr.session.savedAt,
+      hasToken: !!browserMgr.session.apiToken,
+    } : null,
+  }));
 
-  ws.onerror = (error) => {
-    console.error('WebSocket error:', error);
-  };
+  ws.on('close', () => { browserMgr.wsClients.delete(ws); });
+  ws.on('error', ()  => { browserMgr.wsClients.delete(ws); });
 });
 
-// Start server
 server.listen(PORT, () => {
-  console.log(`🚀 Web Testing Dashboard running on http://localhost:${PORT}`);
-  console.log(`📊 Access the dashboard and manage security testing tools`);
-  console.log(`📚 Documentation: http://localhost:${PORT}/docs`);
+  console.log(`🚀 Shabiki Dashboard running on http://localhost:${PORT}`);
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-  });
+process.on('SIGTERM', async () => {
+  await browserMgr.close();
+  server.close(() => process.exit(0));
 });
 
 module.exports = app;
