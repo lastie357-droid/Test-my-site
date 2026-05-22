@@ -317,15 +317,22 @@ class BrowserManager {
   async click(x, y) {
     if (!this.page) throw new Error('Browser not running');
     await this.page.mouse.click(x, y);
-    await this._delay(1200);
-    // Wait for possible navigation
-    await this.page.waitForNetworkIdle({ timeout: 4000, idleTime: 500 }).catch(() => {});
+    // Short settle delay then grab screenshot immediately
+    await this._delay(120);
+    const img   = await this.screenshot();
     const url   = this.page.url();
     const title = await this.page.title().catch(() => '');
-    const img   = await this.screenshot();
-    const session = this._tryExtractSession();
     this.broadcast('screenshot', { img, url, title });
-    return { img, url, title, session: await session };
+    // Background: wait for network + extract session without blocking response
+    this.page.waitForNetworkIdle({ timeout: 2000, idleTime: 250 }).catch(() => {}).then(async () => {
+      const img2  = await this.screenshot();
+      const url2  = this.page.url();
+      const title2 = await this.page.title().catch(() => '');
+      this.broadcast('screenshot', { img: img2, url: url2, title: title2 });
+      const session = await this._tryExtractSession();
+      if (session) this.broadcast('session_saved', { session });
+    });
+    return { img, url, title, session: null };
   }
 
   // ── Keypress ─────────────────────────────────────────────────────────────
@@ -347,20 +354,22 @@ class BrowserManager {
     const ppKey = MAP[key] || (key.length === 1 ? key : null);
     if (!ppKey) return { img: await this.screenshot() };
 
-    if (mods.length) {
-      await this.page.keyboard.down(mods[0]);
-    }
+    if (mods.length) await this.page.keyboard.down(mods[0]);
     await this.page.keyboard.press(ppKey);
-    if (mods.length) {
-      await this.page.keyboard.up(mods[0]);
-    }
+    if (mods.length) await this.page.keyboard.up(mods[0]);
 
-    await this._delay(800);
-    await this.page.waitForNetworkIdle({ timeout: 3000, idleTime: 400 }).catch(() => {});
+    await this._delay(100);
+    const img   = await this.screenshot();
     const url   = this.page.url();
     const title = await this.page.title().catch(() => '');
-    const img   = await this.screenshot();
     this.broadcast('screenshot', { img, url, title });
+    // Background settle for keys like Enter that may navigate
+    this.page.waitForNetworkIdle({ timeout: 2000, idleTime: 250 }).catch(() => {}).then(async () => {
+      const img2 = await this.screenshot();
+      const url2 = this.page.url();
+      const title2 = await this.page.title().catch(() => '');
+      this.broadcast('screenshot', { img: img2, url: url2, title: title2 });
+    });
     return { img, url, title };
   }
 
@@ -444,8 +453,8 @@ class BrowserManager {
   async screenshot() {
     if (!this.page) return null;
     try {
-      const buf = await this.page.screenshot({ encoding: 'base64', fullPage: false });
-      return `data:image/png;base64,${buf}`;
+      const buf = await this.page.screenshot({ encoding: 'base64', fullPage: false, type: 'jpeg', quality: 72 });
+      return `data:image/jpeg;base64,${buf}`;
     } catch { return null; }
   }
 

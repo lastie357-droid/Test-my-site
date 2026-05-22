@@ -6,13 +6,8 @@
   "apiToken": null,
   "cookies": [
     {
-      "name": "_ga_91SE2YRRFD",
-      "value": "GS2.1.s1779465251$o1$g1$t1779467035$j15$l0$h0",
-      "domain": ".shabiki.com"
-    },
-    {
       "name": "_clsk",
-      "value": "1qll9fe%5E1779467035296%5E3%5E1%5Ee.clarity.ms%2Fcollect",
+      "value": "1qll9fe%5E1779467672667%5E9%5E1%5Ee.clarity.ms%2Fcollect",
       "domain": ".shabiki.com"
     },
     {
@@ -31,18 +26,13 @@
       "domain": ".shabiki.com"
     },
     {
-      "name": "_clck",
-      "value": "8w0vht%5E2%5Eg69%5E0%5E2333",
-      "domain": ".shabiki.com"
-    },
-    {
       "name": "_fbp",
       "value": "fb.1.1779465253208.939457169425259161",
       "domain": ".shabiki.com"
     },
     {
-      "name": "_gcl_au",
-      "value": "1.1.1062750731.1779465252",
+      "name": "_clck",
+      "value": "8w0vht%5E2%5Eg69%5E0%5E2333",
       "domain": ".shabiki.com"
     },
     {
@@ -51,13 +41,23 @@
       "domain": ".shabiki.com"
     },
     {
-      "name": "sib_cuid",
-      "value": "279b631a-8320-4d71-a530-9c2ccc20878e",
+      "name": "_gcl_au",
+      "value": "1.1.1062750731.1779465252",
       "domain": ".shabiki.com"
     },
     {
+      "name": "_ga_91SE2YRRFD",
+      "value": "GS2.1.s1779465251$o1$g1$t1779467671$j16$l0$h0",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "po_visitor",
+      "value": "Rz-BEeHxz4Bb",
+      "domain": "shabiki.com"
+    },
+    {
       "name": "_ga_V5J1H8HF7E",
-      "value": "GS2.1.s1779465252$o1$g1$t1779467035$j15$l0$h0",
+      "value": "GS2.1.s1779465252$o1$g1$t1779467672$j14$l0$h0",
       "domain": ".shabiki.com"
     },
     {
@@ -66,11 +66,40 @@
       "domain": ".shabiki.com"
     },
     {
-      "name": "po_visitor",
-      "value": "Rz-BEeHxz4Bb",
-      "domain": "shabiki.com"
+      "name": "sib_cuid",
+      "value": "279b631a-8320-4d71-a530-9c2ccc20878e",
+      "domain": ".shabiki.com"
     }
   ],
-  "localStorage": {},
-  "savedAt": "2026-05-22T16:24:41.831Z"
+  "localStorage": {
+    "user": {
+      "username": "704897825",
+      "id": "7484834",
+      "nome": "704897825",
+      "email": "",
+      "account": {
+        "balance": 0,
+        "currency": "KES",
+        "fido": 0,
+        "bonus": 0,
+        "liquido": 0,
+        "withdrawable_balance": 0,
+        "not_withdrawable_balance": 0,
+        "saldoReal": 0,
+        "casinoBalance": 0,
+        "future_promo_bonus": false,
+        "future_promo_bonus_amount": null,
+        "future_promo_bonus_datetime": null,
+        "future_promo_bonus_period_end": null,
+        "sport_bonus_balance": 0
+      },
+      "users": false,
+      "payments-token": false,
+      "api_token": "2004cdf3e9c1ee9cfc62f2e54f7c9992638ed9cfb6a0056f8d99d7d6fb50491a",
+      "public_api_access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5ZDQwMWI4MS1jMTFkLTRmOTQtODdmZS03ZmQ2YzMxYzgyYTMiLCJqdGkiOiJmYjNmZjhmNmQ2MjUxZTc3NTk2ZmQzNTk3ZWQ4YjliYzVlNjZjOTc3M2MxMmRkOWI4OWE5ZjJmZWJmY2UyYzA3ODBkODZhMDE2NzIzYmVhMSIsImlhdCI6MTc3OTQ2NzM5NS45Mjk4MzcsIm5iZiI6MTc3OTQ2NzM5NS45Mjk4NDEsImV4cCI6MTc4MjA1OTM5NS45MjAzNzQsInN1YiI6Ijc0ODQ4MzQiLCJzY29wZXMiOlsiZnJvbnRlbmQ6KiJdfQ.hUTaitYwxSkXq6hig9r6F3AP23loOsa6nUehhydyDZZKIupfarcyy6Xv0t6uFs-ZMS73dJ6Qg9rxgnNwrskNh91B86m37rEwU8NLrJCjrwsGUhYYVGpaE36Jj1WfLAiH4WIi4NXEHD3mproCvYSKE4Xmiy3HYr9kGhVIKu4yQawnZ9ujjAPHFl4MABSpao0CZbME9KTYOu7-zCF19N4tgmP_f8li7KR6wiA_LPPKtBBBmBFCzED4i5siAHTMaOEsVftoX7s0aGMez2okegVnsha2YJByu96TBd2-4dyjiOfHhT7sBH6AWTX1m-NIGnGY7Ag7OO-OxYqgOEBq348HJXPmA4Jzmf6Im2JL-ojjVQ8bvkV2AYt63QR9XWPSC0fMMjkeUuykAu1BGHc1DFwwZAs103h3dqjIiNm2Ds-vvr6cOXvxdJ5nGXeid-MMAu0CIa0bqKpgCfOx5lpG_qQQFZQ57IgS0q-deBnbc-r0sVmv_mfmmqDaVQjcMPIbhu8nqfqLz0tb_gKD6x3mFOaJzg4SdbzVSaZIVR8IOiaaarKqGthAmY_HTs4VRv7AnHUFcSfPyiEHUs0iGpKXMr5JafsyCdm1Jf4P6Bhrl-MPRKUwc8iPWP48MUJBIje3u5nkqzuYiRjnicY1OkFaeADwPCfYANDu9SWrCnVBKHh1biw",
+      "refresh_token": "def502009a8c1e1a8786f0fdbfdce1cfbc0921c74f49819d4099869514d669891bf0cde6912d4f831c0defb16775b5f5a0d38dd4baf0d0c4a2152ba053867ec8484dde11a31ec4ff671579d898254f50ee902de19f15828cb6b6c4b56546744a4c492c7845ed16f019854498f88a965491af7666a092b829700e7cdbf19b8bcd1e1f479c91b82d58c8a8a098b3f5ddf678e1b8a636d2d4ca79c377730c57b4d8cb4ef17bd2cb030974370a44bcfb5539abb3f9fe3b847ba3fa02b0d6b9cbe0abce66970067e9e8d981a836b54f86aec91aa65821146602b8d5a81b8f0fac6bc0c943d48f5158d707ac149c0d2b2d03d27542c40ec6e285f9c4240019bb5d32239ec2b76a359ed7f4cedb1aab0a321c1cd7f0b8cd61b112fc421ce5e3a80881a8a809873b0be1dc4a7948e8effef94f5814f3dcd14e039008abe3dc3120062847aabc48b62ab3b79d42bd1ae865eeec5f8988278e4a0ffd0631522f524781443e3386b1a6a2d7e3674a06eb0b4c2b29530af43e760b8353f43fe0f30ce1d4c0ea3624cded18e526854b9ccf04f974ddd9c7b626a4d5d9",
+      "kyc_status": "not_init"
+    }
+  },
+  "savedAt": "2026-05-22T16:34:36.651Z"
 }

@@ -152,7 +152,7 @@ browserShot.addEventListener('click', async (e) => {
   const x = Math.round((e.clientX - rect.left) * scaleX);
   const y = Math.round((e.clientY - rect.top)  * scaleY);
 
-  setLoading(true, '🖱 Clicking…');
+  setStatus('busy', 'Clicking…');
   try {
     const res  = await fetch(`${API}/browser/click`, {
       method: 'POST',
@@ -166,7 +166,7 @@ browserShot.addEventListener('click', async (e) => {
       if (data.title) pageTitle.textContent = data.title;
       autoDetectSession(data);
     }
-  } finally { setLoading(false); }
+  } finally { setStatus('ready', 'Ready'); }
 });
 
 // ── KEYBOARD FORWARDING ──────────────────────
