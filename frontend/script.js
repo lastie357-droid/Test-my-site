@@ -1,5 +1,5 @@
 // API Base URL
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 const DEFAULT_DOMAIN = 'https://www.shabiki.com';
 const DEFAULT_LOGIN_URL = 'https://www.shabiki.com';
 
