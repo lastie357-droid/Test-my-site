@@ -571,6 +571,127 @@ async function apiPost(url, body) {
   return res.json();
 }
 
+// ── VIRTUAL KEYBOARD ──────────────────────────
+(function initVirtualKeyboard() {
+  const vkPanel     = document.getElementById('vkPanel');
+  const vkToggleBtn = document.getElementById('vkToggleBtn');
+  const vkCloseBtn  = document.getElementById('vkCloseBtn');
+  const vkHeader    = document.getElementById('vkHeader');
+  const vkShiftBtns = document.querySelectorAll('.vk-shift');
+  const vkCapsBtn   = document.getElementById('vkCapsBtn');
+
+  let vkShiftOn = false;
+  let vkCapsOn  = false;
+
+  // ── Toggle open/close ──
+  function openVK() {
+    vkPanel.classList.remove('hidden');
+    vkToggleBtn.classList.add('active');
+  }
+  function closeVK() {
+    vkPanel.classList.add('hidden');
+    vkToggleBtn.classList.remove('active');
+  }
+
+  vkToggleBtn.addEventListener('click', () => {
+    vkPanel.classList.contains('hidden') ? openVK() : closeVK();
+  });
+  vkCloseBtn.addEventListener('click', closeVK);
+
+  // ── Drag to reposition ──
+  let dragging = false, dragOffX = 0, dragOffY = 0;
+
+  vkHeader.addEventListener('mousedown', e => {
+    if (e.target === vkCloseBtn) return;
+    dragging = true;
+    const rect = vkPanel.getBoundingClientRect();
+    dragOffX = e.clientX - rect.left;
+    dragOffY = e.clientY - rect.top;
+    vkPanel.style.transition = 'none';
+    vkPanel.style.bottom = 'auto';
+    vkPanel.style.right  = 'auto';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    vkPanel.style.left = (e.clientX - dragOffX) + 'px';
+    vkPanel.style.top  = (e.clientY - dragOffY) + 'px';
+  });
+
+  document.addEventListener('mouseup', () => { dragging = false; });
+
+  // ── Shift & Caps state ──
+  function setShift(on) {
+    vkShiftOn = on;
+    vkShiftBtns.forEach(b => b.classList.toggle('vk-active', on));
+    updateKeyLabels();
+  }
+
+  function updateKeyLabels() {
+    const upper = vkShiftOn !== vkCapsOn; // XOR: either shift or caps (not both)
+    document.querySelectorAll('.vk-key[data-key]').forEach(btn => {
+      const k = btn.dataset.key;
+      if (k && k.length === 1 && k >= 'a' && k <= 'z') {
+        btn.textContent = upper ? k.toUpperCase() : k.toUpperCase();
+      }
+    });
+  }
+
+  // ── Send key to browser ──
+  async function sendKey(key, shift = false, ctrl = false) {
+    if (isBusy) return;
+    try {
+      const res  = await fetch(`${API}/browser/keypress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, shift, ctrl })
+      });
+      const data = await res.json();
+      if (data.img) {
+        showShot(data.img);
+        if (data.url)   { addressBar.value = data.url; updateSecIcon(data.url); }
+        if (data.title) pageTitle.textContent = data.title;
+        autoDetectSession(data);
+      }
+    } catch {}
+  }
+
+  // ── Key click handler ──
+  document.querySelectorAll('.vk-key').forEach(btn => {
+    btn.addEventListener('mousedown', e => e.preventDefault()); // keep browser focus on shot
+
+    btn.addEventListener('click', async () => {
+      const key = btn.dataset.key;
+      if (!key) return;
+
+      if (key === 'Shift') {
+        setShift(!vkShiftOn);
+        return;
+      }
+
+      if (key === 'CapsLock') {
+        vkCapsOn = !vkCapsOn;
+        vkCapsBtn.classList.toggle('vk-active', vkCapsOn);
+        updateKeyLabels();
+        await sendKey('CapsLock');
+        return;
+      }
+
+      const useShift = vkShiftOn;
+      let sendKeyVal = key;
+
+      if (key.length === 1 && key >= 'a' && key <= 'z') {
+        sendKeyVal = useShift || vkCapsOn ? key.toUpperCase() : key;
+      }
+
+      await sendKey(sendKeyVal, useShift);
+
+      if (vkShiftOn) setShift(false);
+    });
+  });
+})();
+
 // ── INIT ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   connectWS();

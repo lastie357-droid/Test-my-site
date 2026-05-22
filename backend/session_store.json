@@ -1,18 +1,23 @@
 {
   "success": true,
   "phone": null,
-  "url": "https://shabiki.com/casino/crash-games",
+  "url": "https://shabiki.com/prematch",
   "title": "Shabiki – Kenya’s Leading Online Sports Betting & Jackpot Platform",
   "apiToken": null,
   "cookies": [
     {
-      "name": "po_visitor",
-      "value": "Rz-BEeHxz4Bb",
-      "domain": "shabiki.com"
+      "name": "_ga_91SE2YRRFD",
+      "value": "GS2.1.s1779465251$o1$g1$t1779467035$j15$l0$h0",
+      "domain": ".shabiki.com"
     },
     {
-      "name": "_hjSessionUser_3680061",
-      "value": "eyJpZCI6IjE5N2JkZTUyLWFhNjYtNTY1Mi04ZDcwLWY5NDU5MDk4N2Q3YiIsImNyZWF0ZWQiOjE3Nzk0NjUyNTMwMDgsImV4aXN0aW5nIjpmYWxzZX0=",
+      "name": "_clsk",
+      "value": "1qll9fe%5E1779467035296%5E3%5E1%5Ee.clarity.ms%2Fcollect",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.1763573207.1779465252",
       "domain": ".shabiki.com"
     },
     {
@@ -21,43 +26,8 @@
       "domain": ".shabiki.com"
     },
     {
-      "name": "sib_cuid",
-      "value": "279b631a-8320-4d71-a530-9c2ccc20878e",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_twpid",
-      "value": "tw.1779465252709.679293230777118496",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_gcl_au",
-      "value": "1.1.1062750731.1779465252",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_fbp",
-      "value": "fb.1.1779465253208.939457169425259161",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "__zlcmid",
-      "value": "1XfoWqb7uog4uD8",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_ga_V5J1H8HF7E",
-      "value": "GS2.1.s1779465252$o1$g0$t1779465252$j60$l0$h0",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_ga_91SE2YRRFD",
-      "value": "GS2.1.s1779465251$o1$g0$t1779465252$j59$l0$h0",
-      "domain": ".shabiki.com"
-    },
-    {
-      "name": "_clsk",
-      "value": "1qll9fe%5E1779465253443%5E1%5E1%5Ee.clarity.ms%2Fcollect",
+      "name": "_hjSessionUser_3680061",
+      "value": "eyJpZCI6IjE5N2JkZTUyLWFhNjYtNTY1Mi04ZDcwLWY5NDU5MDk4N2Q3YiIsImNyZWF0ZWQiOjE3Nzk0NjUyNTMwMDgsImV4aXN0aW5nIjp0cnVlfQ==",
       "domain": ".shabiki.com"
     },
     {
@@ -66,11 +36,41 @@
       "domain": ".shabiki.com"
     },
     {
-      "name": "_ga",
-      "value": "GA1.1.1763573207.1779465252",
+      "name": "_fbp",
+      "value": "fb.1.1779465253208.939457169425259161",
       "domain": ".shabiki.com"
+    },
+    {
+      "name": "_gcl_au",
+      "value": "1.1.1062750731.1779465252",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_twpid",
+      "value": "tw.1779465252709.679293230777118496",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "sib_cuid",
+      "value": "279b631a-8320-4d71-a530-9c2ccc20878e",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "_ga_V5J1H8HF7E",
+      "value": "GS2.1.s1779465252$o1$g1$t1779467035$j15$l0$h0",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "__zlcmid",
+      "value": "1XfoWqb7uog4uD8",
+      "domain": ".shabiki.com"
+    },
+    {
+      "name": "po_visitor",
+      "value": "Rz-BEeHxz4Bb",
+      "domain": "shabiki.com"
     }
   ],
   "localStorage": {},
-  "savedAt": "2026-05-22T15:54:46.918Z"
+  "savedAt": "2026-05-22T16:24:41.831Z"
 }
