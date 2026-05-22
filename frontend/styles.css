@@ -152,10 +152,20 @@ label {
   color: var(--dark-bg);
 }
 
+.panel-note {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background-color: #eef2ff;
+  color: #1e3a8a;
+  border: 1px solid #c7d2fe;
+}
+
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="url"],
+input[type="tel"],
 textarea,
 select {
   width: 100%;

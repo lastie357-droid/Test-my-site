@@ -1,5 +1,7 @@
 // API Base URL
 const API_BASE = 'http://localhost:3000/api';
+const DEFAULT_DOMAIN = 'https://www.shabiki.com';
+const DEFAULT_LOGIN_URL = 'https://www.shabiki.com';
 
 // DOM Elements
 const sections = document.querySelectorAll('.section');
@@ -47,17 +49,15 @@ function showSection(sectionId) {
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
-  const domain = document.getElementById('domain').value;
-  const username = document.getElementById('username').value;
+
+  const phone = document.getElementById('phone').value;
   const password = document.getElementById('password').value;
-  const loginUrl = document.getElementById('loginUrl').value;
-  const usernameSelector = document.getElementById('usernameSelector').value;
-  const passwordSelector = document.getElementById('passwordSelector').value;
+  const domain = DEFAULT_DOMAIN;
+  const loginUrl = DEFAULT_LOGIN_URL;
 
-  currentUrl = loginUrl || domain;
+  currentUrl = domain;
 
-  showStatus(loginStatus, 'Testing login...', 'info');
+  showStatus(loginStatus, 'Testing Shabiki login...', 'info');
 
   try {
     const response = await fetch(`${API_BASE}/auth/test-login`, {
@@ -65,11 +65,9 @@ loginForm.addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         domain,
-        username,
+        phone,
         password,
-        loginUrl,
-        usernameSelector,
-        passwordSelector
+        loginUrl
       })
     });
 

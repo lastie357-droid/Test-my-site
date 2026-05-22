@@ -12,58 +12,81 @@ const sessions = new Map();
  */
 router.post('/test-login', async (req, res) => {
   try {
-    const { domain, username, password, email, loginUrl, usernameSelector, passwordSelector, submitSelector } = req.body;
+    const { domain, username, phone, password, email, loginUrl, usernameSelector, passwordSelector, submitSelector } = req.body;
 
     if (!domain || !password) {
       return res.status(400).json({ error: 'Domain and password are required' });
     }
 
+    const credentials = username || email || phone;
     const url = loginUrl || `${domain}`;
+
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
     try {
       // Navigate to login page
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      await page.waitForTimeout(2000);
 
-      // Fill in credentials
-      if (usernameSelector) {
-        await page.type(usernameSelector, username || email);
+      // Determine selectors automatically when not provided
+      const defaultUsernameSelectors = [
+        'input[type=tel]',
+        'input[name*=phone]',
+        'input[id*=phone]',
+        'input[name*=username]',
+        'input[id*=username]',
+        'input[name*=user]',
+        'input[id*=user]',
+        'input[type=text]'
+      ];
+      const defaultPasswordSelectors = ['input[type=password]'];
+      const defaultSubmitSelectors = ['button[type=submit]', 'input[type=submit]', 'button'];
+
+      const findSelector = async (selectors) => {
+        for (const selector of selectors) {
+          const element = await page.$(selector);
+          if (element) return selector;
+        }
+        return null;
+      };
+
+      const usernameField = usernameSelector || await findSelector(defaultUsernameSelectors);
+      const passwordField = passwordSelector || await findSelector(defaultPasswordSelectors);
+      const submitField = submitSelector || await findSelector(defaultSubmitSelectors);
+
+      if (usernameField && credentials) {
+        await page.type(usernameField, credentials.toString(), { delay: 50 });
       }
-      if (passwordSelector) {
-        await page.type(passwordSelector, password);
+      if (passwordField) {
+        await page.type(passwordField, password, { delay: 50 });
       }
 
-      // Submit form
-      if (submitSelector) {
-        await page.click(submitSelector);
+      if (submitField) {
+        await page.click(submitField);
       } else {
         await page.keyboard.press('Enter');
       }
 
-      // Wait for navigation
       await page.waitForNavigation({ timeout: 10000 }).catch(() => {});
 
-      // Get page content
       const content = await page.content();
-      const url = page.url();
-
-      // Check for common success/failure indicators
+      const currentUrl = page.url();
       const isAuthenticated = !content.includes('login') && !content.includes('password') && !content.includes('unauthorized');
 
       const sessionId = Math.random().toString(36).substr(2, 9);
       sessions.set(sessionId, {
         domain,
-        username: username || email,
+        username: credentials,
         authenticated: isAuthenticated,
         timestamp: new Date(),
-        url: url
+        url: currentUrl
       });
 
       res.json({
         success: isAuthenticated,
         sessionId,
-        url,
+        url: currentUrl,
         message: isAuthenticated ? 'Login successful' : 'Login failed or page content unclear'
       });
     } finally {

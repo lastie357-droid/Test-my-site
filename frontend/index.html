@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web Testing Dashboard - Security Testing Suite</title>
+  <title>Shabiki Login Tester</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,8 +11,8 @@
     <!-- Navigation -->
     <nav class="navbar">
       <div class="nav-brand">
-        <h1>🔐 Web Testing Dashboard</h1>
-        <p class="nav-subtitle">Comprehensive Security Testing Suite</p>
+        <h1>🎯 Shabiki Login Tester</h1>
+        <p class="nav-subtitle">Phone and password only</p>
       </div>
       <ul class="nav-menu">
         <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
@@ -31,52 +31,31 @@
         <!-- Login & Preview Section -->
         <div class="dashboard-grid">
           <!-- Login Panel -->
-          <div class="panel login-panel">
-            <h3>🔑 Test Login & Credentials</h3>
+          <div class="panel login-panel shabiki-panel">
+            <h3>🔒 Shabiki Login Test</h3>
+            <p class="panel-note">Only phone number and password are required. The target site is preconfigured.</p>
             <form id="loginForm">
               <div class="form-group">
-                <label for="domain">Target Domain/URL</label>
-                <input type="url" id="domain" placeholder="https://example.com" required>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="username">Username/Email</label>
-                  <input type="text" id="username" placeholder="admin@example.com">
-                </div>
-                <div class="form-group">
-                  <label for="password">Password</label>
-                  <input type="password" id="password" placeholder="••••••••" required>
-                </div>
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" placeholder="254704897825" required>
               </div>
 
               <div class="form-group">
-                <label for="loginUrl">Login URL (if different)</label>
-                <input type="url" id="loginUrl" placeholder="https://example.com/login">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="panel123" required>
               </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="usernameSelector">Username Field Selector</label>
-                  <input type="text" id="usernameSelector" placeholder="#username or .login-field">
-                </div>
-                <div class="form-group">
-                  <label for="passwordSelector">Password Field Selector</label>
-                  <input type="text" id="passwordSelector" placeholder="#password or .pass-field">
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-primary">Test Login</button>
+              <button type="submit" class="btn btn-primary">Login with Shabiki</button>
               <div id="loginStatus" class="status-message"></div>
             </form>
           </div>
 
           <!-- Preview Panel -->
           <div class="panel preview-panel">
-            <h3>📸 Live Web Preview</h3>
+            <h3>📸 Shabiki Live Preview</h3>
             <div id="previewContainer" class="preview-container">
               <div class="preview-placeholder">
-                <p>Enter a URL and click "Test Login" or "Take Screenshot" to preview the website</p>
+                <p>Shabiki is preloaded. Use the login form to authenticate and view the live preview.</p>
               </div>
             </div>
             <div class="preview-actions">
@@ -218,15 +197,11 @@
           <h3>API Documentation</h3>
           <div class="api-docs">
             <h4>/api/auth/test-login - POST</h4>
-            <p>Test login credentials against a target domain</p>
+            <p>Test login credentials against Shabiki with phone and password only</p>
             <pre><code>{
-  "domain": "https://example.com",
-  "username": "admin",
-  "password": "password123",
-  "loginUrl": "https://example.com/login",
-  "usernameSelector": "#username",
-  "passwordSelector": "#password",
-  "submitSelector": "button[type='submit']"
+  "domain": "https://www.shabiki.com",
+  "phone": "254704897825",
+  "password": "panel123"
 }</code></pre>
 
             <h4>/api/preview/screenshot - POST</h4>
