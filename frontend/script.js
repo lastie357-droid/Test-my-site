@@ -1,432 +1,369 @@
-// API Base URL
 const API_BASE = '/api';
 const DEFAULT_DOMAIN = 'https://www.shabiki.com';
-const DEFAULT_LOGIN_URL = 'https://www.shabiki.com';
 
-// DOM Elements
-const sections = document.querySelectorAll('.section');
-const navLinks = document.querySelectorAll('.nav-link');
+const sections  = document.querySelectorAll('.section');
+const navLinks  = document.querySelectorAll('.nav-link');
 const loginForm = document.getElementById('loginForm');
-const screenshotBtn = document.getElementById('screenshotBtn');
-const analyzeBtn = document.getElementById('analyzeBtn');
-const htmlBtn = document.getElementById('htmlBtn');
-const previewContainer = document.getElementById('previewContainer');
+const loginBtn  = document.getElementById('loginBtn');
 const loginStatus = document.getElementById('loginStatus');
-const toolForm = document.getElementById('toolForm');
-const toolSelect = document.getElementById('toolSelect');
-const reportForm = document.getElementById('reportForm');
-const htmlModal = document.getElementById('htmlModal');
-const closeBtn = document.querySelector('.close');
+const userDataCard  = document.getElementById('userDataCard');
+const previewContainer = document.getElementById('previewContainer');
+const previewActions   = document.getElementById('previewActions');
+const screenshotBtn = document.getElementById('screenshotBtn');
+const analyzeBtn    = document.getElementById('analyzeBtn');
+const htmlBtn       = document.getElementById('htmlBtn');
+const toolForm    = document.getElementById('toolForm');
+const toolSelect  = document.getElementById('toolSelect');
+const reportForm  = document.getElementById('reportForm');
+const htmlModal   = document.getElementById('htmlModal');
+const closeBtn    = document.querySelector('.close');
 
 let currentSessionId = null;
-let currentUrl = null;
+let currentUrl = DEFAULT_DOMAIN;
 
-// Navigation
+// ── NAVIGATION ──
 navLinks.forEach(link => {
-  link.addEventListener('click', (e) => {
+  link.addEventListener('click', e => {
     e.preventDefault();
-    const sectionId = link.getAttribute('href').substring(1);
-    showSection(sectionId);
+    showSection(link.getAttribute('href').substring(1));
   });
 });
 
-function showSection(sectionId) {
-  sections.forEach(section => section.classList.remove('active'));
-  navLinks.forEach(link => link.classList.remove('active'));
-  
-  const section = document.getElementById(sectionId);
-  const link = document.querySelector(`[href="#${sectionId}"]`);
-  
-  if (section) section.classList.add('active');
-  if (link) link.classList.add('active');
-
-  // Load content when switching sections
-  if (sectionId === 'tools') loadTools();
-  if (sectionId === 'reports') loadReports();
+function showSection(id) {
+  sections.forEach(s => s.classList.remove('active'));
+  navLinks.forEach(l => l.classList.remove('active'));
+  const s = document.getElementById(id);
+  const l = document.querySelector(`[href="#${id}"]`);
+  if (s) s.classList.add('active');
+  if (l) l.classList.add('active');
+  if (id === 'tools') loadTools();
+  if (id === 'reports') loadReports();
 }
 
-// ============== LOGIN & PREVIEW ==============
-
-loginForm.addEventListener('submit', async (e) => {
+// ── LOGIN ──
+loginForm.addEventListener('submit', async e => {
   e.preventDefault();
-
-  const phone = document.getElementById('phone').value;
+  const phone    = document.getElementById('phone').value.trim();
   const password = document.getElementById('password').value;
-  const domain = DEFAULT_DOMAIN;
-  const loginUrl = DEFAULT_LOGIN_URL;
 
-  currentUrl = domain;
+  loginBtn.disabled = true;
+  loginBtn.textContent = '⏳ Testing...';
+  showStatus(loginStatus, 'Sending request to fapi.shabiki.com...', 'info');
+  userDataCard.style.display = 'none';
+  previewActions.style.display = 'none';
 
-  showStatus(loginStatus, 'Testing Shabiki login...', 'info');
+  previewContainer.innerHTML = `
+    <div class="preview-placeholder">
+      <p>⏳ Awaiting API response...</p>
+    </div>`;
 
   try {
-    const response = await fetch(`${API_BASE}/auth/test-login`, {
+    const res  = await fetch(`${API_BASE}/auth/test-login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        domain,
-        phone,
-        password,
-        loginUrl
-      })
+      body: JSON.stringify({ phone, password })
     });
+    const data = await res.json();
 
-    const data = await response.json();
+    currentSessionId = data.sessionId;
 
-    if (response.ok) {
-      currentSessionId = data.sessionId;
+    // Show raw JSON response
+    previewContainer.innerHTML = `<pre class="json-box">${JSON.stringify(data, null, 2)}</pre>`;
+
+    if (data.success) {
       showStatus(loginStatus, `✅ ${data.message}`, 'success');
-      
-      // Auto-take screenshot after successful login
-      setTimeout(() => takeScreenshot(currentUrl), 1000);
+      renderUserCard(data);
+      previewActions.style.display = 'flex';
     } else {
-      showStatus(loginStatus, `❌ ${data.error}`, 'error');
+      showStatus(loginStatus, `❌ ${data.message || data.login_msg || 'Login failed'}`, 'error');
     }
-  } catch (error) {
-    showStatus(loginStatus, `❌ Error: ${error.message}`, 'error');
+  } catch (err) {
+    showStatus(loginStatus, `❌ Error: ${err.message}`, 'error');
+    previewContainer.innerHTML = `<div class="preview-placeholder"><p>❌ Request failed</p></div>`;
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = '🚀 Test Login';
   }
 });
 
-screenshotBtn.addEventListener('click', async () => {
-  if (!currentUrl) {
-    alert('Please enter a URL first');
-    return;
-  }
-  takeScreenshot(currentUrl);
-});
+function renderUserCard(data) {
+  const u = data.userData || {};
+  const rows = [
+    ['Login Status', data.login_status || 'OK'],
+    ['Message',      data.message],
+    ['Session ID',   data.sessionId],
+    ...(u.api_token  ? [['API Token', u.api_token]] : []),
+    ...(u.username   ? [['Username', u.username]]   : []),
+    ...(u.balance    ? [['Balance',  u.balance]]     : []),
+    ...(u.currency   ? [['Currency', u.currency]]    : []),
+  ];
+
+  userDataCard.innerHTML = `
+    <h4>✅ Login Response</h4>
+    ${rows.map(([k, v]) => `
+      <div class="user-data-row">
+        <span class="user-data-label">${k}</span>
+        <span class="user-data-value ${k === 'API Token' ? 'token-value' : ''}">${v || '—'}</span>
+      </div>`).join('')}
+  `;
+  userDataCard.style.display = 'block';
+}
+
+// ── SCREENSHOT ──
+screenshotBtn.addEventListener('click', () => takeScreenshot(currentUrl));
 
 async function takeScreenshot(url) {
-  showStatus(loginStatus, 'Capturing screenshot...', 'info');
+  showStatus(loginStatus, '📷 Capturing screenshot...', 'info');
+  previewContainer.innerHTML = `<div class="preview-placeholder"><p>⏳ Launching headless browser...</p></div>`;
 
   try {
-    const response = await fetch(`${API_BASE}/preview/screenshot`, {
+    const res  = await fetch(`${API_BASE}/preview/screenshot`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, sessionId: currentSessionId })
     });
+    const data = await res.json();
 
-    const data = await response.json();
-
-    if (response.ok) {
-      previewContainer.innerHTML = `<img src="${data.screenshot}" alt="Screenshot" style="max-width: 100%; height: auto;">`;
+    if (res.ok) {
+      previewContainer.innerHTML = `<img src="${data.screenshot}" alt="Screenshot" style="max-width:100%;height:auto;">`;
       showStatus(loginStatus, '✅ Screenshot captured', 'success');
     } else {
       showStatus(loginStatus, `❌ ${data.error}`, 'error');
+      previewContainer.innerHTML = `<div class="preview-placeholder"><p>❌ Screenshot failed</p></div>`;
     }
-  } catch (error) {
-    showStatus(loginStatus, `❌ Error: ${error.message}`, 'error');
+  } catch (err) {
+    showStatus(loginStatus, `❌ ${err.message}`, 'error');
   }
 }
 
+// ── ANALYZE ──
 analyzeBtn.addEventListener('click', async () => {
-  if (!currentUrl) {
-    alert('Please enter a URL first');
-    return;
-  }
-
-  showStatus(loginStatus, 'Analyzing security...', 'info');
-
+  showStatus(loginStatus, '🔍 Analyzing security headers...', 'info');
   try {
-    const response = await fetch(`${API_BASE}/preview/analyze`, {
+    const res  = await fetch(`${API_BASE}/preview/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: currentUrl })
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
+    const data = await res.json();
+    if (res.ok) {
       displayAnalysisResults(data);
       showStatus(loginStatus, '✅ Analysis complete', 'success');
     } else {
       showStatus(loginStatus, `❌ ${data.error}`, 'error');
     }
-  } catch (error) {
-    showStatus(loginStatus, `❌ Error: ${error.message}`, 'error');
+  } catch (err) {
+    showStatus(loginStatus, `❌ ${err.message}`, 'error');
   }
 });
 
+// ── HTML VIEW ──
 htmlBtn.addEventListener('click', async () => {
-  if (!currentUrl) {
-    alert('Please enter a URL first');
-    return;
-  }
-
   try {
-    const response = await fetch(`${API_BASE}/preview/html`, {
+    const res  = await fetch(`${API_BASE}/preview/html`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: currentUrl })
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
+    const data = await res.json();
+    if (res.ok) {
       document.getElementById('htmlContent').textContent = data.html;
       htmlModal.style.display = 'block';
     } else {
       alert(`Error: ${data.error}`);
     }
-  } catch (error) {
-    alert(`Error: ${error.message}`);
+  } catch (err) {
+    alert(`Error: ${err.message}`);
   }
 });
 
 function displayAnalysisResults(data) {
-  const analysisPanel = document.getElementById('analysisPanel');
-  const analysisResults = document.getElementById('analysisResults');
+  const panel   = document.getElementById('analysisPanel');
+  const results = document.getElementById('analysisResults');
 
-  let html = '<div class="analysis-results">';
-
+  let html = '';
   if (data.issues && data.issues.length > 0) {
-    data.issues.forEach(issue => {
+    data.issues.forEach(i => {
       html += `
-        <div class="finding-item ${issue.severity}">
-          <div class="finding-title">🔔 ${issue.type}</div>
+        <div class="finding-item ${i.severity}">
+          <div class="finding-title">🔔 ${i.type}</div>
           <div class="finding-details">
-            <strong>Severity:</strong> ${issue.severity.toUpperCase()}<br>
-            ${issue.header ? `<strong>Header:</strong> ${issue.header}<br>` : ''}
-            ${issue.recommendation ? `<strong>Recommendation:</strong> ${issue.recommendation}` : ''}
+            <strong>Severity:</strong> ${i.severity.toUpperCase()}
+            ${i.header ? ` &nbsp;|&nbsp; <strong>Header:</strong> ${i.header}` : ''}
+            ${i.recommendation ? `<br>${i.recommendation}` : ''}
           </div>
-        </div>
-      `;
+        </div>`;
     });
   } else {
-    html += '<p>No security issues detected</p>';
+    html = '<p style="color:var(--shabiki-green)">✅ No security issues detected</p>';
   }
 
-  html += '</div>';
-  analysisResults.innerHTML = html;
-  analysisPanel.style.display = 'block';
+  results.innerHTML = html;
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth' });
 }
 
-// ============== TOOLS ==============
-
+// ── TOOLS ──
 async function loadTools() {
-  const toolsGrid = document.getElementById('toolsGrid');
-  toolsGrid.innerHTML = '<div class="loading">Loading tools...</div>';
+  const grid = document.getElementById('toolsGrid');
+  grid.innerHTML = '<div class="loading">Loading tools...</div>';
 
   try {
-    const response = await fetch(`${API_BASE}/tools/list`);
-    const tools = await response.json();
+    const res   = await fetch(`${API_BASE}/tools/list`);
+    const tools = await res.json();
 
+    const installed = [];
     let html = '';
-    const installedTools = [];
-
-    tools.forEach(tool => {
-      const statusClass = tool.installed ? 'installed' : 'not-installed';
-      const statusText = tool.installed ? '✅ Installed' : '⚠️ Not Installed';
-
+    tools.forEach(t => {
+      const cls  = t.installed ? 'installed' : 'not-installed';
+      const txt  = t.installed ? '✅ Installed' : '⚠️ Not Installed';
       html += `
         <div class="tool-card">
-          <h4>${tool.name}</h4>
-          <div class="tool-category">${tool.category}</div>
-          <p>${tool.description}</p>
-          <div class="tool-status ${statusClass}">${statusText}</div>
-          <a href="${tool.website}" target="_blank" style="font-size: 12px; color: #2563eb;">Learn more →</a>
-        </div>
-      `;
-
-      if (tool.installed) {
-        installedTools.push({ name: tool.name, value: tool.name.toLowerCase() });
-      }
+          <h4>${t.name}</h4>
+          <div class="tool-category">${t.category}</div>
+          <p>${t.description}</p>
+          <div class="tool-status ${cls}">${txt}</div>
+          <a href="${t.website}" target="_blank" style="font-size:11px;color:var(--shabiki-accent);margin-top:8px;display:block;">Learn more →</a>
+        </div>`;
+      if (t.installed) installed.push(t.name);
     });
 
-    toolsGrid.innerHTML = html;
+    grid.innerHTML = html || '<p style="color:var(--text-muted)">No tools found.</p>';
 
-    // Update tool select dropdown
     toolSelect.innerHTML = '<option value="">-- Select a tool --</option>';
-    installedTools.forEach(tool => {
-      const option = document.createElement('option');
-      option.value = tool.value;
-      option.textContent = tool.name;
-      toolSelect.appendChild(option);
+    installed.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n.toLowerCase();
+      o.textContent = n;
+      toolSelect.appendChild(o);
     });
-
-    if (installedTools.length === 0) {
-      toolSelect.innerHTML += '<option disabled>No tools installed. Install tools first!</option>';
+    if (!installed.length) {
+      toolSelect.innerHTML += '<option disabled>No tools installed</option>';
     }
-  } catch (error) {
-    toolsGrid.innerHTML = `<p>Error loading tools: ${error.message}</p>`;
+  } catch (err) {
+    grid.innerHTML = `<p style="color:var(--shabiki-accent)">Error: ${err.message}</p>`;
   }
 }
 
-toolForm.addEventListener('submit', async (e) => {
+toolForm.addEventListener('submit', async e => {
   e.preventDefault();
-
-  const tool = document.getElementById('toolSelect').value;
+  const tool   = toolSelect.value;
   const target = document.getElementById('toolTarget').value;
   const options = document.getElementById('toolOptions').value;
+  const status = document.getElementById('toolStatus');
 
-  if (!tool) {
-    alert('Please select a tool');
-    return;
-  }
+  if (!tool) { alert('Please select a tool'); return; }
 
-  const toolStatus = document.getElementById('toolStatus');
-  showStatus(toolStatus, `Executing ${tool}...`, 'info');
+  showStatus(status, `⏳ Executing ${tool}...`, 'info');
 
   try {
-    const response = await fetch(`${API_BASE}/tools/run`, {
+    const res  = await fetch(`${API_BASE}/tools/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tool, target, options })
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      displayToolOutput(data);
-      showStatus(toolStatus, '✅ Tool executed successfully', 'success');
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('toolOutput').textContent = data.output || 'No output';
+      document.getElementById('toolOutputPanel').style.display = 'block';
+      document.getElementById('toolOutputPanel').scrollIntoView({ behavior: 'smooth' });
+      showStatus(status, '✅ Tool executed', 'success');
     } else {
-      showStatus(toolStatus, `❌ ${data.error}`, 'error');
+      showStatus(status, `❌ ${data.error}`, 'error');
     }
-  } catch (error) {
-    showStatus(toolStatus, `❌ Error: ${error.message}`, 'error');
+  } catch (err) {
+    showStatus(status, `❌ ${err.message}`, 'error');
   }
 });
 
-function displayToolOutput(data) {
-  const toolOutputPanel = document.getElementById('toolOutputPanel');
-  const toolOutput = document.getElementById('toolOutput');
-
-  toolOutput.textContent = data.output || 'No output';
-  toolOutputPanel.style.display = 'block';
-  toolOutputPanel.scrollIntoView({ behavior: 'smooth' });
-}
-
-// ============== REPORTS ==============
-
+// ── REPORTS ──
 async function loadReports() {
-  const reportsList = document.getElementById('reportsList');
-  reportsList.innerHTML = '<p>Loading reports...</p>';
+  const list = document.getElementById('reportsList');
+  list.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
 
   try {
-    const response = await fetch(`${API_BASE}/reports/list`);
-    const reports = await response.json();
+    const res     = await fetch(`${API_BASE}/reports/list`);
+    const reports = await res.json();
 
-    if (reports.length === 0) {
-      reportsList.innerHTML = '<p>No reports yet. Create one above!</p>';
+    if (!reports.length) {
+      list.innerHTML = '<p style="color:var(--text-muted)">No reports yet. Create one above!</p>';
       return;
     }
 
-    let html = '';
-    reports.forEach(report => {
-      const date = new Date(report.createdAt).toLocaleDateString();
-      html += `
-        <div class="report-card">
-          <div class="report-header">
-            <div class="report-title">${report.testName}</div>
-            <div class="report-severity ${report.severity}">${report.severity.toUpperCase()}</div>
-          </div>
-          <div class="report-domain">🌐 ${report.domain}</div>
-          <div class="report-date">📅 ${date}</div>
-          <div class="report-actions">
-            <button class="btn btn-secondary btn-sm" onclick="viewReport('${report.id}')">View</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteReport('${report.id}')">Delete</button>
-          </div>
+    list.innerHTML = reports.map(r => `
+      <div class="report-card">
+        <div class="report-header">
+          <div class="report-title">${r.testName}</div>
+          <div class="report-severity ${r.severity}">${(r.severity || 'low').toUpperCase()}</div>
         </div>
-      `;
-    });
-
-    reportsList.innerHTML = html;
-  } catch (error) {
-    reportsList.innerHTML = `<p>Error loading reports: ${error.message}</p>`;
+        <div class="report-domain">🌐 ${r.domain}</div>
+        <div class="report-date">📅 ${new Date(r.createdAt).toLocaleDateString()}</div>
+        <div class="report-actions">
+          <button class="btn btn-secondary btn-sm" onclick="viewReport('${r.id}')">View</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteReport('${r.id}')">Delete</button>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    list.innerHTML = `<p style="color:var(--shabiki-accent)">Error: ${err.message}</p>`;
   }
 }
 
-reportForm.addEventListener('submit', async (e) => {
+reportForm.addEventListener('submit', async e => {
   e.preventDefault();
-
   const testName = document.getElementById('reportName').value;
-  const domain = document.getElementById('reportDomain').value;
-  const findingsText = document.getElementById('reportFindings').value;
-  const findings = findingsText.split('\n').filter(f => f.trim());
+  const domain   = document.getElementById('reportDomain').value;
+  const findings = document.getElementById('reportFindings').value
+    .split('\n').filter(f => f.trim())
+    .map(f => ({ type: 'Finding', description: f, severity: 'medium' }));
+  const status = document.getElementById('reportStatus');
 
-  const reportStatus = document.getElementById('reportStatus');
-  showStatus(reportStatus, 'Creating report...', 'info');
+  showStatus(status, 'Creating report...', 'info');
 
   try {
-    const response = await fetch(`${API_BASE}/reports/create`, {
+    const res  = await fetch(`${API_BASE}/reports/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        testName,
-        domain,
-        findings: findings.map(f => ({
-          type: 'Finding',
-          description: f,
-          severity: 'medium'
-        }))
-      })
+      body: JSON.stringify({ testName, domain, findings })
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      showStatus(reportStatus, `✅ Report created: ${data.fileName}`, 'success');
+    const data = await res.json();
+    if (res.ok) {
+      showStatus(status, `✅ Report created: ${data.fileName}`, 'success');
       reportForm.reset();
       loadReports();
     } else {
-      showStatus(reportStatus, `❌ ${data.error}`, 'error');
+      showStatus(status, `❌ ${data.error}`, 'error');
     }
-  } catch (error) {
-    showStatus(reportStatus, `❌ Error: ${error.message}`, 'error');
+  } catch (err) {
+    showStatus(status, `❌ ${err.message}`, 'error');
   }
 });
 
-function viewReport(reportId) {
-  alert('Report details: ' + reportId);
-  // In a real app, you would load and display the report details
+function viewReport(id) { alert('Report ID: ' + id); }
+function deleteReport(id) {
+  if (!confirm('Delete this report?')) return;
+  fetch(`${API_BASE}/reports/${id}`, { method: 'DELETE' })
+    .then(() => loadReports())
+    .catch(err => alert('Error: ' + err.message));
 }
 
-function deleteReport(reportId) {
-  if (confirm('Are you sure you want to delete this report?')) {
-    fetch(`${API_BASE}/reports/${reportId}`, { method: 'DELETE' })
-      .then(() => loadReports())
-      .catch(error => alert('Error: ' + error.message));
-  }
+// ── UTILITIES ──
+function showStatus(el, msg, type) {
+  el.textContent = msg;
+  el.className = `status-message ${type}`;
 }
 
-// ============== UTILITIES ==============
+closeBtn.addEventListener('click', () => htmlModal.style.display = 'none');
+window.addEventListener('click', e => { if (e.target === htmlModal) htmlModal.style.display = 'none'; });
 
-function showStatus(element, message, type) {
-  element.textContent = message;
-  element.className = `status-message ${type}`;
-}
-
-// Modal functionality
-closeBtn.addEventListener('click', () => {
-  htmlModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-  if (e.target === htmlModal) {
-    htmlModal.style.display = 'none';
-  }
-});
-
-// WebSocket for real-time updates
+// WebSocket
 function initWebSocket() {
-  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${protocol}://${window.location.host}`);
-
-  ws.onopen = () => {
-    console.log('WebSocket connected');
-  };
-
-  ws.onmessage = (event) => {
-    console.log('Message from server:', event.data);
-  };
-
-  ws.onclose = () => {
-    console.log('WebSocket disconnected');
-    // Reconnect after 3 seconds
-    setTimeout(initWebSocket, 3000);
-  };
+  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${window.location.host}`);
+  ws.onopen  = () => console.log('WebSocket connected');
+  ws.onclose = () => setTimeout(initWebSocket, 3000);
+  ws.onerror = () => {};
 }
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Dashboard initialized');
   initWebSocket();

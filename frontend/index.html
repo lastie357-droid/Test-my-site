@@ -3,16 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shabiki Login Tester</title>
+  <title>Shabiki Testing Dashboard</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <!-- Navigation -->
     <nav class="navbar">
       <div class="nav-brand">
-        <h1>🎯 Shabiki Login Tester</h1>
-        <p class="nav-subtitle">Phone and password only</p>
+        <h1>⚡ <span>SHABIKI</span> DASHBOARD</h1>
       </div>
       <ul class="nav-menu">
         <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
@@ -22,44 +20,44 @@
       </ul>
     </nav>
 
-    <!-- Main Content -->
     <div class="main-content">
-      <!-- Dashboard Section -->
+
+      <!-- ── DASHBOARD ── -->
       <section id="dashboard" class="section active">
-        <h2>Dashboard</h2>
-        
-        <!-- Login & Preview Section -->
+        <h2 class="section-title">🎯 Dashboard</h2>
+
         <div class="dashboard-grid">
           <!-- Login Panel -->
-          <div class="panel login-panel shabiki-panel">
-            <h3>🔒 Shabiki Login Test</h3>
-            <p class="panel-note">Only phone number and password are required. The target site is preconfigured.</p>
+          <div class="panel login-panel">
+            <h3>🔐 Shabiki Login Test</h3>
+            <p class="panel-note">Direct API test via fapi.shabiki.com — no browser required.</p>
             <form id="loginForm">
               <div class="form-group">
                 <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" placeholder="254704897825" required>
+                <input type="tel" id="phone" placeholder="254704897825" value="254704897825" required>
               </div>
-
               <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="panel123" required>
+                <input type="password" id="password" placeholder="panel123" value="panel123" required>
               </div>
-
-              <button type="submit" class="btn btn-primary">Login with Shabiki</button>
+              <button type="submit" class="btn btn-primary" id="loginBtn">🚀 Test Login</button>
               <div id="loginStatus" class="status-message"></div>
             </form>
+
+            <!-- User data card shown after successful login -->
+            <div id="userDataCard" class="user-data-card" style="display:none;"></div>
           </div>
 
-          <!-- Preview Panel -->
+          <!-- Response / Preview Panel -->
           <div class="panel preview-panel">
-            <h3>📸 Shabiki Live Preview</h3>
+            <h3>📡 API Response</h3>
             <div id="previewContainer" class="preview-container">
               <div class="preview-placeholder">
-                <p>Shabiki is preloaded. Use the login form to authenticate and view the live preview.</p>
+                <p>🔌 Submit the login form to see the live API response from fapi.shabiki.com</p>
               </div>
             </div>
-            <div class="preview-actions">
-              <button id="screenshotBtn" class="btn btn-secondary">📷 Take Screenshot</button>
+            <div class="preview-actions" id="previewActions" style="display:none;">
+              <button id="screenshotBtn" class="btn btn-secondary">📷 Screenshot</button>
               <button id="analyzeBtn" class="btn btn-secondary">🔍 Analyze Security</button>
               <button id="htmlBtn" class="btn btn-secondary">📄 View HTML</button>
             </div>
@@ -67,23 +65,21 @@
         </div>
 
         <!-- Analysis Results -->
-        <div class="panel" id="analysisPanel" style="display: none;">
-          <h3>Security Analysis Results</h3>
+        <div class="panel" id="analysisPanel" style="display:none;">
+          <h3>🛡️ Security Analysis Results</h3>
           <div id="analysisResults" class="analysis-results"></div>
         </div>
       </section>
 
-      <!-- Tools Section -->
+      <!-- ── TOOLS ── -->
       <section id="tools" class="section">
-        <h2>Security Testing Tools</h2>
-        
-        <!-- Tools List -->
+        <h2 class="section-title">🛠️ Security Testing Tools</h2>
+
         <div class="tools-grid" id="toolsGrid">
           <div class="loading">Loading tools...</div>
         </div>
 
-        <!-- Tool Execution Panel -->
-        <div class="panel tool-execution-panel">
+        <div class="panel">
           <h3>⚙️ Execute Tool</h3>
           <form id="toolForm">
             <div class="form-row">
@@ -95,136 +91,126 @@
               </div>
               <div class="form-group">
                 <label for="toolTarget">Target (Domain/IP)</label>
-                <input type="text" id="toolTarget" placeholder="example.com or 192.168.1.1" required>
+                <input type="text" id="toolTarget" placeholder="shabiki.com or 192.168.1.1" required>
               </div>
             </div>
             <div class="form-group">
               <label for="toolOptions">Additional Options (Optional)</label>
               <textarea id="toolOptions" placeholder="-p 80,443 -sV" rows="3"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Execute Tool</button>
+            <button type="submit" class="btn btn-primary">▶ Execute Tool</button>
             <div id="toolStatus" class="status-message"></div>
           </form>
         </div>
 
-        <!-- Tool Output -->
-        <div class="panel" id="toolOutputPanel" style="display: none;">
-          <h3>Tool Output</h3>
+        <div class="panel" id="toolOutputPanel" style="display:none;">
+          <h3>💻 Tool Output</h3>
           <pre id="toolOutput" class="output-box"></pre>
         </div>
       </section>
 
-      <!-- Reports Section -->
+      <!-- ── REPORTS ── -->
       <section id="reports" class="section">
-        <h2>Test Reports</h2>
-        
-        <!-- Create Report -->
+        <h2 class="section-title">📋 Test Reports</h2>
+
         <div class="panel">
-          <h3>📋 Create Report</h3>
+          <h3>✏️ Create Report</h3>
           <form id="reportForm">
             <div class="form-row">
               <div class="form-group">
                 <label for="reportName">Test Name</label>
-                <input type="text" id="reportName" placeholder="e.g., Vulnerability Assessment - May 2024" required>
+                <input type="text" id="reportName" placeholder="e.g., Shabiki Login Audit - May 2026" required>
               </div>
               <div class="form-group">
                 <label for="reportDomain">Target Domain</label>
-                <input type="text" id="reportDomain" placeholder="example.com" required>
+                <input type="text" id="reportDomain" placeholder="shabiki.com" value="shabiki.com" required>
               </div>
             </div>
             <div class="form-group">
-              <label for="reportFindings">Key Findings</label>
+              <label for="reportFindings">Key Findings (one per line)</label>
               <textarea id="reportFindings" placeholder="Enter findings, one per line" rows="4"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Create Report</button>
+            <button type="submit" class="btn btn-primary">📄 Create Report</button>
             <div id="reportStatus" class="status-message"></div>
           </form>
         </div>
 
-        <!-- Reports List -->
         <div class="panel">
-          <h3>Reports History</h3>
+          <h3>📁 Reports History</h3>
           <div id="reportsList" class="reports-list">
-            <p>No reports yet. Create one above!</p>
+            <p style="color:var(--text-muted);">No reports yet. Create one above!</p>
           </div>
         </div>
       </section>
 
-      <!-- Documentation Section -->
+      <!-- ── DOCS ── -->
       <section id="docs" class="section">
-        <h2>Documentation & Guides</h2>
-        
+        <h2 class="section-title">📚 Documentation</h2>
+
         <div class="docs-grid">
           <div class="doc-card">
             <h3>🚀 Getting Started</h3>
-            <p>Learn how to set up and use the Web Testing Dashboard for security testing.</p>
+            <p>Set up and use the Shabiki Testing Dashboard for login and security testing.</p>
             <a href="#" class="doc-link">Read Guide →</a>
           </div>
-
           <div class="doc-card">
-            <h3>🔐 Security Tools Overview</h3>
-            <p>Comprehensive guide to 200+ security tools integrated with the dashboard.</p>
-            <a href="#" class="doc-link">View Tools →</a>
+            <h3>🔐 Auth API Reference</h3>
+            <p>Direct integration with fapi.shabiki.com for fast, reliable login testing.</p>
+            <a href="#" class="doc-link">View Reference →</a>
           </div>
-
           <div class="doc-card">
-            <h3>⚙️ Tool Configuration</h3>
-            <p>Learn how to configure and run each security testing tool properly.</p>
-            <a href="#" class="doc-link">Configuration Guide →</a>
+            <h3>🛠️ Tool Configuration</h3>
+            <p>Configure and run each security testing tool properly.</p>
+            <a href="#" class="doc-link">Config Guide →</a>
           </div>
-
           <div class="doc-card">
             <h3>🐛 Vulnerability Testing</h3>
             <p>Step-by-step guide to identify and test for common vulnerabilities.</p>
             <a href="#" class="doc-link">Testing Methods →</a>
           </div>
-
           <div class="doc-card">
             <h3>📊 Report Generation</h3>
-            <p>How to create professional security testing reports with findings.</p>
+            <p>Create professional security testing reports with findings.</p>
             <a href="#" class="doc-link">Report Guide →</a>
           </div>
-
           <div class="doc-card">
             <h3>🛡️ Best Practices</h3>
-            <p>Security testing best practices and ethical hacking guidelines.</p>
+            <p>Security testing best practices and ethical testing guidelines.</p>
             <a href="#" class="doc-link">Best Practices →</a>
           </div>
         </div>
 
-        <!-- Detailed Documentation -->
-        <div class="panel" style="margin-top: 30px;">
-          <h3>API Documentation</h3>
+        <div class="panel">
+          <h3>📡 API Documentation</h3>
           <div class="api-docs">
-            <h4>/api/auth/test-login - POST</h4>
-            <p>Test login credentials against Shabiki with phone and password only</p>
+            <h4>POST /api/auth/test-login</h4>
+            <p>Test login credentials against Shabiki via fapi.shabiki.com directly.</p>
             <pre><code>{
-  "domain": "https://www.shabiki.com",
   "phone": "254704897825",
   "password": "panel123"
 }</code></pre>
 
-            <h4>/api/preview/screenshot - POST</h4>
-            <p>Capture a screenshot of a webpage</p>
+            <h4>POST /api/preview/screenshot</h4>
+            <p>Capture a screenshot of a webpage using Puppeteer.</p>
             <pre><code>{
-  "url": "https://example.com",
+  "url": "https://www.shabiki.com",
   "sessionId": "optional-session-id"
 }</code></pre>
 
-            <h4>/api/tools/run - POST</h4>
-            <p>Execute a security testing tool</p>
+            <h4>POST /api/tools/run</h4>
+            <p>Execute a security testing tool against a target.</p>
             <pre><code>{
   "tool": "nmap",
-  "target": "192.168.1.1",
+  "target": "shabiki.com",
   "options": {}
 }</code></pre>
 
-            <h4>/api/reports/create - POST</h4>
-            <p>Create a security test report</p>
+            <h4>POST /api/reports/create</h4>
+            <p>Create a security test report.</p>
             <pre><code>{
-  "testName": "Vulnerability Assessment",
-  "domain": "example.com",
-  "findings": ["XSS vulnerability", "Missing security headers"]
+  "testName": "Shabiki Login Audit",
+  "domain": "shabiki.com",
+  "findings": ["Missing HSTS", "Weak password policy"]
 }</code></pre>
           </div>
         </div>
@@ -232,7 +218,7 @@
     </div>
   </div>
 
-  <!-- Modal for HTML viewer -->
+  <!-- HTML Modal -->
   <div id="htmlModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
