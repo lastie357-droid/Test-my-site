@@ -1,5 +1,6 @@
 const API_BASE = '/api';
 const DEFAULT_DOMAIN = 'https://www.shabiki.com';
+const STORAGE_KEY = 'shabiki_session';
 
 const sections  = document.querySelectorAll('.section');
 const navLinks  = document.querySelectorAll('.nav-link');
@@ -20,6 +21,61 @@ const closeBtn    = document.querySelector('.close');
 
 let currentSessionId = null;
 let currentUrl = DEFAULT_DOMAIN;
+
+// ── SESSION STORAGE HELPERS ──
+function saveSession(data) {
+  const store = {
+    phone:       document.getElementById('phone').value.trim(),
+    password:    document.getElementById('password').value,
+    sessionId:   data.sessionId,
+    apiToken:    data.userData ? data.userData.api_token : null,
+    login_status: data.login_status,
+    message:     data.message,
+    userData:    data.userData || null,
+    savedAt:     new Date().toISOString()
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEY);
+  currentSessionId = null;
+  userDataCard.style.display = 'none';
+  previewActions.style.display = 'none';
+  previewContainer.innerHTML = `
+    <div class="preview-placeholder">
+      <p>🔌 Submit the login form to see the live API response from fapi.shabiki.com</p>
+    </div>`;
+  showStatus(loginStatus, '🗑️ Session cleared. Please log in again.', 'info');
+}
+
+function restoreSession(stored) {
+  if (!stored) return;
+
+  // Restore form fields
+  if (stored.phone)    document.getElementById('phone').value    = stored.phone;
+  if (stored.password) document.getElementById('password').value = stored.password;
+
+  currentSessionId = stored.sessionId;
+
+  // Show restored session banner
+  const savedTime = stored.savedAt
+    ? new Date(stored.savedAt).toLocaleString()
+    : 'unknown time';
+
+  previewContainer.innerHTML = `<pre class="json-box">${JSON.stringify(stored, null, 2)}</pre>`;
+
+  showStatus(loginStatus, `✅ Session restored from ${savedTime}`, 'success');
+  renderUserCard({ login_status: stored.login_status, message: stored.message, sessionId: stored.sessionId, userData: stored.userData });
+  previewActions.style.display = 'flex';
+}
 
 // ── NAVIGATION ──
 navLinks.forEach(link => {
@@ -71,7 +127,8 @@ loginForm.addEventListener('submit', async e => {
     previewContainer.innerHTML = `<pre class="json-box">${JSON.stringify(data, null, 2)}</pre>`;
 
     if (data.success) {
-      showStatus(loginStatus, `✅ ${data.message}`, 'success');
+      saveSession(data);
+      showStatus(loginStatus, `✅ ${data.message} — Session saved`, 'success');
       renderUserCard(data);
       previewActions.style.display = 'flex';
     } else {
@@ -92,21 +149,24 @@ function renderUserCard(data) {
     ['Login Status', data.login_status || 'OK'],
     ['Message',      data.message],
     ['Session ID',   data.sessionId],
-    ...(u.api_token  ? [['API Token', u.api_token]] : []),
-    ...(u.username   ? [['Username', u.username]]   : []),
-    ...(u.balance    ? [['Balance',  u.balance]]     : []),
-    ...(u.currency   ? [['Currency', u.currency]]    : []),
+    ...(u.api_token  ? [['API Token',  u.api_token]]  : []),
+    ...(u.username   ? [['Username',   u.username]]   : []),
+    ...(u.balance !== undefined ? [['Balance', u.balance]] : []),
+    ...(u.currency   ? [['Currency',   u.currency]]   : []),
   ];
 
   userDataCard.innerHTML = `
-    <h4>✅ Login Response</h4>
+    <h4>✅ Active Session</h4>
     ${rows.map(([k, v]) => `
       <div class="user-data-row">
         <span class="user-data-label">${k}</span>
-        <span class="user-data-value ${k === 'API Token' ? 'token-value' : ''}">${v || '—'}</span>
+        <span class="user-data-value ${k === 'API Token' ? 'token-value' : ''}">${v ?? '—'}</span>
       </div>`).join('')}
+    <button class="btn btn-secondary btn-sm" id="clearSessionBtn" style="margin-top:14px;width:100%;">🗑️ Clear Session</button>
   `;
   userDataCard.style.display = 'block';
+
+  document.getElementById('clearSessionBtn').addEventListener('click', clearSession);
 }
 
 // ── SCREENSHOT ──
@@ -247,10 +307,10 @@ async function loadTools() {
 
 toolForm.addEventListener('submit', async e => {
   e.preventDefault();
-  const tool   = toolSelect.value;
-  const target = document.getElementById('toolTarget').value;
+  const tool    = toolSelect.value;
+  const target  = document.getElementById('toolTarget').value;
   const options = document.getElementById('toolOptions').value;
-  const status = document.getElementById('toolStatus');
+  const status  = document.getElementById('toolStatus');
 
   if (!tool) { alert('Please select a tool'); return; }
 
@@ -364,7 +424,14 @@ function initWebSocket() {
   ws.onerror = () => {};
 }
 
+// ── INIT — restore session on page load ──
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Dashboard initialized');
   initWebSocket();
+
+  const stored = loadSession();
+  if (stored && stored.sessionId) {
+    console.log('Restoring saved session...');
+    restoreSession(stored);
+  }
 });
