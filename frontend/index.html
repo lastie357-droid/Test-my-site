@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Testing Dashboard - Security Testing Suite</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-brand">
+        <h1>🔐 Web Testing Dashboard</h1>
+        <p class="nav-subtitle">Comprehensive Security Testing Suite</p>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+        <li><a href="#tools" class="nav-link">Tools</a></li>
+        <li><a href="#reports" class="nav-link">Reports</a></li>
+        <li><a href="#docs" class="nav-link">Docs</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section active">
+        <h2>Dashboard</h2>
+        
+        <!-- Login & Preview Section -->
+        <div class="dashboard-grid">
+          <!-- Login Panel -->
+          <div class="panel login-panel">
+            <h3>🔑 Test Login & Credentials</h3>
+            <form id="loginForm">
+              <div class="form-group">
+                <label for="domain">Target Domain/URL</label>
+                <input type="url" id="domain" placeholder="https://example.com" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="username">Username/Email</label>
+                  <input type="text" id="username" placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                  <label for="password">Password</label>
+                  <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="loginUrl">Login URL (if different)</label>
+                <input type="url" id="loginUrl" placeholder="https://example.com/login">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="usernameSelector">Username Field Selector</label>
+                  <input type="text" id="usernameSelector" placeholder="#username or .login-field">
+                </div>
+                <div class="form-group">
+                  <label for="passwordSelector">Password Field Selector</label>
+                  <input type="text" id="passwordSelector" placeholder="#password or .pass-field">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Test Login</button>
+              <div id="loginStatus" class="status-message"></div>
+            </form>
+          </div>
+
+          <!-- Preview Panel -->
+          <div class="panel preview-panel">
+            <h3>📸 Live Web Preview</h3>
+            <div id="previewContainer" class="preview-container">
+              <div class="preview-placeholder">
+                <p>Enter a URL and click "Test Login" or "Take Screenshot" to preview the website</p>
+              </div>
+            </div>
+            <div class="preview-actions">
+              <button id="screenshotBtn" class="btn btn-secondary">📷 Take Screenshot</button>
+              <button id="analyzeBtn" class="btn btn-secondary">🔍 Analyze Security</button>
+              <button id="htmlBtn" class="btn btn-secondary">📄 View HTML</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analysis Results -->
+        <div class="panel" id="analysisPanel" style="display: none;">
+          <h3>Security Analysis Results</h3>
+          <div id="analysisResults" class="analysis-results"></div>
+        </div>
+      </section>
+
+      <!-- Tools Section -->
+      <section id="tools" class="section">
+        <h2>Security Testing Tools</h2>
+        
+        <!-- Tools List -->
+        <div class="tools-grid" id="toolsGrid">
+          <div class="loading">Loading tools...</div>
+        </div>
+
+        <!-- Tool Execution Panel -->
+        <div class="panel tool-execution-panel">
+          <h3>⚙️ Execute Tool</h3>
+          <form id="toolForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="toolSelect">Select Tool</label>
+                <select id="toolSelect" required>
+                  <option value="">-- Select a tool --</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="toolTarget">Target (Domain/IP)</label>
+                <input type="text" id="toolTarget" placeholder="example.com or 192.168.1.1" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="toolOptions">Additional Options (Optional)</label>
+              <textarea id="toolOptions" placeholder="-p 80,443 -sV" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Execute Tool</button>
+            <div id="toolStatus" class="status-message"></div>
+          </form>
+        </div>
+
+        <!-- Tool Output -->
+        <div class="panel" id="toolOutputPanel" style="display: none;">
+          <h3>Tool Output</h3>
+          <pre id="toolOutput" class="output-box"></pre>
+        </div>
+      </section>
+
+      <!-- Reports Section -->
+      <section id="reports" class="section">
+        <h2>Test Reports</h2>
+        
+        <!-- Create Report -->
+        <div class="panel">
+          <h3>📋 Create Report</h3>
+          <form id="reportForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="reportName">Test Name</label>
+                <input type="text" id="reportName" placeholder="e.g., Vulnerability Assessment - May 2024" required>
+              </div>
+              <div class="form-group">
+                <label for="reportDomain">Target Domain</label>
+                <input type="text" id="reportDomain" placeholder="example.com" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reportFindings">Key Findings</label>
+              <textarea id="reportFindings" placeholder="Enter findings, one per line" rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Report</button>
+            <div id="reportStatus" class="status-message"></div>
+          </form>
+        </div>
+
+        <!-- Reports List -->
+        <div class="panel">
+          <h3>Reports History</h3>
+          <div id="reportsList" class="reports-list">
+            <p>No reports yet. Create one above!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Documentation Section -->
+      <section id="docs" class="section">
+        <h2>Documentation & Guides</h2>
+        
+        <div class="docs-grid">
+          <div class="doc-card">
+            <h3>🚀 Getting Started</h3>
+            <p>Learn how to set up and use the Web Testing Dashboard for security testing.</p>
+            <a href="#" class="doc-link">Read Guide →</a>
+          </div>
+
+          <div class="doc-card">
+            <h3>🔐 Security Tools Overview</h3>
+            <p>Comprehensive guide to 200+ security tools integrated with the dashboard.</p>
+            <a href="#" class="doc-link">View Tools →</a>
+          </div>
+
+          <div class="doc-card">
+            <h3>⚙️ Tool Configuration</h3>
+            <p>Learn how to configure and run each security testing tool properly.</p>
+            <a href="#" class="doc-link">Configuration Guide →</a>
+          </div>
+
+          <div class="doc-card">
+            <h3>🐛 Vulnerability Testing</h3>
+            <p>Step-by-step guide to identify and test for common vulnerabilities.</p>
+            <a href="#" class="doc-link">Testing Methods →</a>
+          </div>
+
+          <div class="doc-card">
+            <h3>📊 Report Generation</h3>
+            <p>How to create professional security testing reports with findings.</p>
+            <a href="#" class="doc-link">Report Guide →</a>
+          </div>
+
+          <div class="doc-card">
+            <h3>🛡️ Best Practices</h3>
+            <p>Security testing best practices and ethical hacking guidelines.</p>
+            <a href="#" class="doc-link">Best Practices →</a>
+          </div>
+        </div>
+
+        <!-- Detailed Documentation -->
+        <div class="panel" style="margin-top: 30px;">
+          <h3>API Documentation</h3>
+          <div class="api-docs">
+            <h4>/api/auth/test-login - POST</h4>
+            <p>Test login credentials against a target domain</p>
+            <pre><code>{
+  "domain": "https://example.com",
+  "username": "admin",
+  "password": "password123",
+  "loginUrl": "https://example.com/login",
+  "usernameSelector": "#username",
+  "passwordSelector": "#password",
+  "submitSelector": "button[type='submit']"
+}</code></pre>
+
+            <h4>/api/preview/screenshot - POST</h4>
+            <p>Capture a screenshot of a webpage</p>
+            <pre><code>{
+  "url": "https://example.com",
+  "sessionId": "optional-session-id"
+}</code></pre>
+
+            <h4>/api/tools/run - POST</h4>
+            <p>Execute a security testing tool</p>
+            <pre><code>{
+  "tool": "nmap",
+  "target": "192.168.1.1",
+  "options": {}
+}</code></pre>
+
+            <h4>/api/reports/create - POST</h4>
+            <p>Create a security test report</p>
+            <pre><code>{
+  "testName": "Vulnerability Assessment",
+  "domain": "example.com",
+  "findings": ["XSS vulnerability", "Missing security headers"]
+}</code></pre>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Modal for HTML viewer -->
+  <div id="htmlModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>HTML Content</h2>
+      <div class="modal-body">
+        <pre id="htmlContent"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
